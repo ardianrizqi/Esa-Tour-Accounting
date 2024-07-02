@@ -9,8 +9,13 @@ Route::get('/', function () {
 // Auth::routes();
 
 Route::middleware('auth')->group(function () {
-    Route::namespace('App\Http\Controllers\Backend')->group(function () {
-        Route::get('/dashboard', 'DashboardController@index')->name('backend.dashboard.index');
+    Route::namespace('App\Http\Controllers\Backend')->name('backend.')->group(function () {
+        Route::get('/dashboard', 'DashboardController@index')->name('dashboard.index');
+
+        Route::group(['prefix' => 'invoice'], function () {
+            Route::get('/', 'InvoiceController@index')->name('invoice.index');
+            Route::get('/create', 'InvoiceController@form')->name('invoice.create');
+        });
     });
 
 });
