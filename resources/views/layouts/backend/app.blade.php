@@ -8,6 +8,7 @@
   data-assets-path="../../assets/"
   data-template="vertical-menu-template">
   <head>
+      <meta name="csrf-token" content="{{ csrf_token() }}">
       <meta charset="utf-8" />
       <meta
         name="viewport"
@@ -66,6 +67,34 @@
       {{-- <script src="{{ asset('assets/vendor/js/template-customizer.js') }}"></script> --}}
       <!--? Config:  Mandatory theme config file contain global vars & default theme options, Set your preferred theme option in this file.  -->
       <script src="{{ asset('assets/js/config.js') }}"></script>
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
+      <style>
+          .loading-spinner {
+              position: fixed;
+              top: 50%;
+              left: 50%;
+              width: 50px;
+              height: 50px;
+              margin-top: -25px;
+              margin-left: -25px;
+              border: 5px solid transparent;
+              border-top-color: #3498db; /* Blue */
+              border-right-color: #e74c3c; /* Red */
+              border-bottom-color: #f1c40f; /* Yellow */
+              border-left-color: #2ecc71; /* Green */
+              border-radius: 50%;
+              animation: spin 1s linear infinite;
+              z-index: 9999;
+          }
+          
+          @keyframes spin {
+              to {
+                  transform: rotate(360deg);
+              }
+          }
+        </style>
+        
 
       @stack('css')
   </head>
@@ -84,6 +113,8 @@
         <div class="layout-page">
             @include('layouts.backend.navbar')
             @yield('content')
+
+            <div id="loading" class="loading-spinner" style="display: none;"></div>
             <!-- Navbar -->
             @include('layouts.backend.footer')
         </div>
@@ -145,7 +176,8 @@
     <script src="{{ asset('assets/js/forms-selects.js') }}"></script>
     <script src="{{ asset('assets/js/forms-tagify.js') }}"></script>
     <script src="{{ asset('assets/js/forms-typeahead.js') }}"></script>
-
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
     @stack('js')
   </body>
 </html>

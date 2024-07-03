@@ -13,14 +13,16 @@
                         <div class="card-body">
                             <div class="row">
                                 <div class="col-md-3 mb-4">
-                                    <label for="select2Basic" class="form-label">Pelanggan</label> 
+                                    <label for="customer" class="form-label">Pelanggan</label>
                                     <button style="width: auto; padding: 5px 10px; font-size: 12px; float:right; margin-bottom: 2%;" type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#editUser">
                                         Add (+)
                                     </button>
-                                    <select id="select2Basic" class="select2 form-select form-select-lg" data-allow-clear="true">
-                                        <option value="AK">Alaska</option>
-                                        <option value="HI">Hawaii</option>
-                                        <option value="CA">California</option>
+                                    <select id="customer_id" name="customer_id" class="select2 form-select form-select-lg" data-allow-clear="true">
+                                        <option>-- Pilih Pelanggan --</option>
+
+                                        @foreach ($customers as $item)
+                                            <option value="{{ $item->id }}">{{ $item->name }}</option>
+                                        @endforeach
                                     </select>
                                 </div>
                         
@@ -142,47 +144,6 @@
                 <div class="col-md-12">
                     <div class="card mb-4">
                         <div class="card-body">                            
-                            {{-- <div class="row">
-                                <hr>
-                                <div style="display: flex; justify-content: flex-end;">
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <label>Total Harga Jual</label> 
-                                        </div>
-
-                                        <div class="col-md-6">
-                                            <label for="select2Basic" class="form-label">Rp. 5.000.000</label> 
-                                        </div>
-                                    </div>
-                                </div>
-                        
-                                <hr>
-                                <div style="display: flex; justify-content: flex-end;">
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <label>Total Modal</label> 
-                                        </div>
-
-                                        <div class="col-md-6">
-                                            <label for="select2Basic" class="form-label">Rp. 5.000.000</label> 
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <hr>
-                                <div class="col-md-12 mb-4">
-                                    <div class="row" style="float: right;">
-                                        <div class="col-md-6">
-                                            <label for="select2Basic" class="form-label">Total Harga Jual</label> 
-                                        </div>
-
-                                        <div class="col-md-6">
-                                            <label for="select2Basic" class="form-label">Rp. 5.000.000</label> 
-                                        </div>
-                                    </div>
-                                </div>
-                            </div> --}}
-
                             <dl class="row mb-0">
                                 <hr>
                                 <dt class="col-6 fw-normal text-heading">Total Harga Jual</dt>
@@ -222,149 +183,64 @@
                             <h3 class="mb-2">Tambah Pelanggan</h3>
                             {{-- <p class="text-muted">Updating user details will receive a privacy audit.</p> --}}
                         </div>
-                        <form id="editUserForm" class="row g-3" onsubmit="return false">
-                            <div class="col-12 col-md-6">
-                                <label class="form-label" for="modalEditUserFirstName">First Name</label>
-                                <input
-                                type="text"
-                                id="modalEditUserFirstName"
-                                name="modalEditUserFirstName"
-                                class="form-control"
-                                placeholder="John" />
+                        <form id="customer_form" class="row g-3">
+                            <div class="col-12 col-md-4">
+                                <label class="form-label" for="modalEditUserFirstName">Nama</label><span style="color: red;"> *</span>
+                                <input type="text" id="name" name="name" class="form-control" placeholder="Ketik nama" required/>
                             </div>
-                            <div class="col-12 col-md-6">
-                                <label class="form-label" for="modalEditUserLastName">Last Name</label>
-                                <input
-                                type="text"
-                                id="modalEditUserLastName"
-                                name="modalEditUserLastName"
-                                class="form-control"
-                                placeholder="Doe" />
+
+                            <div class="col-12 col-md-4">
+                                <label class="form-label" for="modalEditUserLastName">Kontak</label><span style="color: red;"> *</span>
+                                <input type="text" id="contact" name="contact" class="form-control" placeholder="Ketik Kontak" required/>
                             </div>
-                            <div class="col-12">
-                                <label class="form-label" for="modalEditUserName">Username</label>
-                                <input
-                                type="text"
-                                id="modalEditUserName"
-                                name="modalEditUserName"
-                                class="form-control"
-                                placeholder="john.doe.007" />
+
+                            <div class="col-12 col-md-4">
+                                <label class="form-label" for="modalEditUserName">Email</label><span style="color: red;"> *</span>
+                                <input type="email" id="email" name="email" class="form-control" placeholder="Ketik Email" required/>
                             </div>
-                            <div class="col-12 col-md-6">
-                                <label class="form-label" for="modalEditUserEmail">Email</label>
-                                <input
-                                type="text"
-                                id="modalEditUserEmail"
-                                name="modalEditUserEmail"
-                                class="form-control"
-                                placeholder="example@domain.com" />
-                            </div>
-                            <div class="col-12 col-md-6">
-                                <label class="form-label" for="modalEditUserStatus">Status</label>
-                                <select
-                                id="modalEditUserStatus"
-                                name="modalEditUserStatus"
-                                class="select2 form-select"
-                                aria-label="Default select example">
-                                <option selected>Status</option>
-                                <option value="1">Active</option>
-                                <option value="2">Inactive</option>
-                                <option value="3">Suspended</option>
+
+                            <div class="col-12 col-md-4">
+                                <label class="form-label" for="province_id">Provinsi</label><span style="color: red;"> *</span>
+                                <select id="province_id" name="province_id" class="select2 form-select" aria-label="Default select example" required>
+                                    <option selected>-- Pilih Provinsi --</option>
+
+                                    @foreach ($provinces as $item) 
+                                        <option value="{{ $item->id }}">{{ $item->name }}</option>
+                                    @endforeach
                                 </select>
                             </div>
-                            <div class="col-12 col-md-6">
-                                <label class="form-label" for="modalEditTaxID">Tax ID</label>
-                                <input
-                                type="text"
-                                id="modalEditTaxID"
-                                name="modalEditTaxID"
-                                class="form-control modal-edit-tax-id"
-                                placeholder="123 456 7890" />
+
+                            <div class="col-12 col-md-4">
+                                <label class="form-label" for="city_id">Kota</label><span style="color: red;"> *</span>
+                                <select id="city_id" name="city_id" class="select2 form-select" aria-label="Default select example" required>
+                                    <option>-- Pilih Kota --</option>
+                                </select>
                             </div>
-                            <div class="col-12 col-md-6">
-                                <label class="form-label" for="modalEditUserPhone">Phone Number</label>
-                                <div class="input-group">
-                                <span class="input-group-text">US (+1)</span>
-                                <input
-                                    type="text"
-                                    id="modalEditUserPhone"
-                                    name="modalEditUserPhone"
-                                    class="form-control phone-number-mask"
-                                    placeholder="202 555 0111" />
-                                </div>
+
+                            <div class="col-12 col-md-4">
+                                <label class="form-label" for="district_id">Kecamatan</label><span style="color: red;"> *</span>
+                                <select id="district_id" name="district_id" class="select2 form-select" aria-label="Default select example" required>
+                                    <option>-- Pilih Kecamatan --</option>
+                                </select>
                             </div>
-                        <div class="col-12 col-md-6">
-                            <label class="form-label" for="modalEditUserLanguage">Language</label>
-                            <select
-                            id="modalEditUserLanguage"
-                            name="modalEditUserLanguage"
-                            class="select2 form-select"
-                            multiple>
-                            <option value="">Select</option>
-                            <option value="english" selected>English</option>
-                            <option value="spanish">Spanish</option>
-                            <option value="french">French</option>
-                            <option value="german">German</option>
-                            <option value="dutch">Dutch</option>
-                            <option value="hebrew">Hebrew</option>
-                            <option value="sanskrit">Sanskrit</option>
-                            <option value="hindi">Hindi</option>
-                            </select>
-                        </div>
-                        <div class="col-12 col-md-6">
-                            <label class="form-label" for="modalEditUserCountry">Country</label>
-                            <select
-                            id="modalEditUserCountry"
-                            name="modalEditUserCountry"
-                            class="select2 form-select"
-                            data-allow-clear="true">
-                            <option value="">Select</option>
-                            <option value="Australia">Australia</option>
-                            <option value="Bangladesh">Bangladesh</option>
-                            <option value="Belarus">Belarus</option>
-                            <option value="Brazil">Brazil</option>
-                            <option value="Canada">Canada</option>
-                            <option value="China">China</option>
-                            <option value="France">France</option>
-                            <option value="Germany">Germany</option>
-                            <option value="India">India</option>
-                            <option value="Indonesia">Indonesia</option>
-                            <option value="Israel">Israel</option>
-                            <option value="Italy">Italy</option>
-                            <option value="Japan">Japan</option>
-                            <option value="Korea">Korea, Republic of</option>
-                            <option value="Mexico">Mexico</option>
-                            <option value="Philippines">Philippines</option>
-                            <option value="Russia">Russian Federation</option>
-                            <option value="South Africa">South Africa</option>
-                            <option value="Thailand">Thailand</option>
-                            <option value="Turkey">Turkey</option>
-                            <option value="Ukraine">Ukraine</option>
-                            <option value="United Arab Emirates">United Arab Emirates</option>
-                            <option value="United Kingdom">United Kingdom</option>
-                            <option value="United States">United States</option>
-                            </select>
-                        </div>
-                        <div class="col-12">
-                            <label class="switch">
-                            <input type="checkbox" class="switch-input" />
-                            <span class="switch-toggle-slider">
-                                <span class="switch-on"></span>
-                                <span class="switch-off"></span>
-                            </span>
-                            <span class="switch-label">Use as a billing address?</span>
-                            </label>
-                        </div>
-                        <div class="col-12 text-center">
-                            <button type="submit" class="btn btn-primary me-sm-3 me-1">Submit</button>
-                            <button
-                            type="reset"
-                            class="btn btn-label-secondary"
-                            data-bs-dismiss="modal"
-                            aria-label="Close">
-                            Cancel
-                            </button>
-                        </div>
+
+                            <div class="col-12 col-md-4">
+                                <label class="form-label" for="post_code">Kode Pos</label>
+                                <input type="text" id="post_code" name="post_code" class="form-control" placeholder="Ketik Kode Pos" />
+                            </div>
+
+                            <div class="col-12 col-md-6">
+                                <label class="form-label" for="address">Alamat</label>
+                                <textarea id="address" rows="4" name="address" class="form-control"></textarea>
+                            </div>
+                           
+                            <div class="col-12" style="display: flex; justify-content: flex-end; margin-top: 5%;">
+                                <button type="reset" class="btn btn-label-secondary" data-bs-dismiss="modal" aria-label="Close">
+                                    Batal
+                                </button>
+
+                                <button id="submit_customer" type="submit" class="btn btn-warning me-sm-3 me-1">Buat</button>
+                            </div>
                         </form>
                     </div>
                 </div>
@@ -373,3 +249,111 @@
         <!--/ Edit User Modal -->
     </div>
 @endsection
+
+@push('js')
+    <script>
+        $('#province_id').change(function() {
+            var province_id = $(this).val();
+
+            if (province_id) {
+                $('#loading').show();
+
+                $.ajax({
+                    url: 'get-city/' + province_id,
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function(data) {
+                        $('#city_id').empty().trigger('change');
+                        $('#city_id').append('<option>-- Pilih City --</option>');
+
+                        $.each(data, function(key, value) {
+                            $('#city_id').append('<option value="' + value.id + '">' + value.name + '</option>');
+                        });
+
+                        $('#city_id').trigger('change');
+                        $('#loading').hide();
+                    }
+                });
+            } else {
+                $('#city_id').empty();
+                $('#city_id').append('<option selected>-- Pilih City --</option>');
+                $('#city_id').select2();
+            }
+        });
+
+        $('#city_id').change(function() {
+            var district_id = $(this).val();
+
+            if (district_id) {
+                $('#loading').show();
+
+                $.ajax({
+                    url: 'get-district/' + district_id,
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function(data) {
+                        $('#district_id').empty().trigger('change');
+                        $('#district_id').append('<option>-- Pilih Kecamatan --</option>');
+
+                        $.each(data, function(key, value) {
+                            $('#district_id').append('<option value="' + value.id + '">' + value.name + '</option>');
+                        });
+
+                        $('#district_id').trigger('change');
+                        $('#loading').hide();
+                    }
+                });
+            } else {
+                $('#district_id').empty().trigger('change');
+                $('#district_id').append('<option selected>-- Pilih City --</option>');
+                $('#district_id').trigger('change');
+            }
+
+        });
+
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            }
+        });
+
+        $('#customer_form').on('submit', function(event) {
+            event.preventDefault();
+
+            var formData = $(this).serialize();
+            $('#loading').show();
+          
+
+            $.ajax({
+                url: 'customer-store',
+                type: 'POST',
+                data: formData,
+                dataType: 'json',
+                success: function(data) {
+                    if (data.status == 200) {
+                        $('#customer_id').empty().trigger('change');
+                        $('#customer_id').append('<option>-- Pilih Pelanggan --</option>');
+
+                        $.each(data.data, function(key, value) {
+                            // console.log(value);
+                            $('#customer_id').append('<option value="' + value.id + '">' + value.name + '</option>');
+                        });
+
+                        $('#customer_id').trigger('change');
+
+                        Swal.fire('Sukses !!', data.message, 'success');
+                    }else{
+                        Swal.fire('Gagal !!', data.message, 'error');
+                    }
+                   
+                    $('#loading').hide();
+
+                    $('#editUser').find('.btn-close').trigger('click');
+                },
+                error: function(xhr, status, error) {
+                  
+                }
+            });
+        });
+    </script>
+@endpush
