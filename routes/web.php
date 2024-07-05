@@ -21,7 +21,15 @@ Route::middleware('auth')->group(function () {
         });
 
         Route::group(['prefix' => 'customer'], function () {
+            Route::get('/', 'CustomerController@index')->name('customer.index');
+            Route::get('/data', 'CustomerController@data')->name('customer.data');
+            Route::get('/create', 'CustomerController@form')->name('customer.create');
+            Route::post('/store', 'CustomerController@store')->name('customer.store');
+            Route::get('/edit/{id}', 'CustomerController@form')->name('customer.edit');
+            Route::delete('/destroy/{id}', 'CustomerController@destroy')->name('customer.destroy');
 
+            Route::get('/get-city/{province_id}', 'CustomerController@get_city')->name('customer.get_city');
+            Route::get('/get-district/{city_id}', 'CustomerController@get_district')->name('customer.get_district');
         });
     });
 

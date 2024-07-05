@@ -111,6 +111,7 @@
 
         <!-- Layout container -->
         <div class="layout-page">
+            @include('sweetalert::alert')
             @include('layouts.backend.navbar')
             @yield('content')
 
