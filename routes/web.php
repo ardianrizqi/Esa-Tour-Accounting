@@ -31,6 +31,15 @@ Route::middleware('auth')->group(function () {
             Route::get('/get-city/{province_id}', 'CustomerController@get_city')->name('customer.get_city');
             Route::get('/get-district/{city_id}', 'CustomerController@get_district')->name('customer.get_district');
         });
+
+        Route::group(['prefix' => 'product'], function () {
+            Route::get('/', 'ProductController@index')->name('product.index');
+            Route::get('/data', 'ProductController@data')->name('product.data');
+            Route::get('/create', 'ProductController@form')->name('product.create');
+            Route::post('/store', 'ProductController@store')->name('product.store');
+            Route::get('/edit/{id}', 'ProductController@form')->name('product.edit');
+            Route::delete('/destroy/{id}', 'ProductController@destroy')->name('product.destroy');
+        });
     });
 
 });

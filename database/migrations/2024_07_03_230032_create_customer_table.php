@@ -18,11 +18,15 @@ return new class extends Migration
             $table->unsignedBigInteger('district_id');
             $table->string('post_code')->nullable();
             $table->longText('address')->nullable();
+            $table->unsignedBigInteger('created_user');
+            $table->unsignedBigInteger('updated_user')->nullable();
 
 
             $table->foreign('province_id')->references('id')->on('provinces');
             $table->foreign('city_id')->references('id')->on('cities');
             $table->foreign('district_id')->references('id')->on('district');
+            $table->foreign('created_user')->references('id')->on('users');
+            $table->foreign('updated_user')->references('id')->on('users');
             $table->timestamps();
         });
     }

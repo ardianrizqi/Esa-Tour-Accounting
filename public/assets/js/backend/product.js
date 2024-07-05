@@ -1,10 +1,10 @@
 $(function () {
-    var table = $('#customer-table'),
+    var table = $('#product-table'),
         dt_basic;
 
     if (table.length) {
         dt_basic = table.DataTable({
-            ajax: "customer/data",
+            ajax: "product/data",
             dataSrc: 'data',
             columns: [
                 {
@@ -14,9 +14,10 @@ $(function () {
                     },
                     orderable: false
                 },
-                { data: 'name' },
-                { data: 'contact' },
-                { data: null, defaultContent: '' },
+                { data: 'product_category' },
+                { data: 'sale' },
+                { data: 'purchase' },
+                { data: 'profit' },
                 { data: null, defaultContent: '' }
             ],
             columnDefs: [
@@ -40,7 +41,7 @@ $(function () {
                         //     '<li><a href="javascript:;" class="dropdown-item text-danger delete-record">Delete</a></li>' +
                         // '</ul>' +
                         // '</div>' +
-                        '<a href="customer/edit/'+ full.id + '" class="btn btn-sm btn-icon item-edit"><i class="text-primary ti ti-pencil"></i></a>'+
+                        '<a href="product/edit/'+ full.id + '" class="btn btn-sm btn-icon item-edit"><i class="text-primary ti ti-pencil"></i></a>'+
                         '<a href="javascript:;" class="btn btn-sm btn-icon item-delete"><i class="text-primary ti ti-trash"></i></a>'
                       );
                     }
@@ -77,7 +78,7 @@ $(function () {
         });
 
         
-        $('#customer-table').on('click', '.item-delete', function () {
+        $('#product-table').on('click', '.item-delete', function () {
             var row = $(this).closest('tr');
             var data = dt_basic.row(row).data();
             // console.log(data.id);
