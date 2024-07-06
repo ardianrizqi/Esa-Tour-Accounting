@@ -40,6 +40,15 @@ Route::middleware('auth')->group(function () {
             Route::get('/edit/{id}', 'ProductController@form')->name('product.edit');
             Route::delete('/destroy/{id}', 'ProductController@destroy')->name('product.destroy');
         });
+
+        Route::group(['prefix' => 'bank'], function () {
+            Route::get('/', 'BankController@index')->name('bank.index');
+            Route::get('/data', 'BankController@data')->name('bank.data');
+            Route::get('/create', 'BankController@form')->name('bank.create');
+            Route::post('/store', 'BankController@store')->name('bank.store');
+            Route::get('/edit/{id}', 'BankController@form')->name('bank.edit');
+            Route::delete('/destroy/{id}', 'BankController@destroy')->name('bank.destroy');
+        });
     });
 
 });
