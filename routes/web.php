@@ -49,6 +49,15 @@ Route::middleware('auth')->group(function () {
             Route::get('/edit/{id}', 'BankController@form')->name('bank.edit');
             Route::delete('/destroy/{id}', 'BankController@destroy')->name('bank.destroy');
         });
+
+        Route::group(['prefix' => 'physical-invoice'], function () {
+            Route::get('/', 'PhysicalInvoiceController@index')->name('physical_invoice.index');
+            Route::get('/data', 'PhysicalInvoiceController@data')->name('physical_invoice.data');
+            Route::get('/create', 'PhysicalInvoiceController@form')->name('physical_invoice.create');
+            Route::post('/store', 'PhysicalInvoiceController@store')->name('physical_invoice.store');
+            Route::get('/edit/{id}', 'PhysicalInvoiceController@form')->name('physical_invoice.edit');
+            Route::delete('/destroy/{id}', 'PhysicalInvoiceController@destroy')->name('physical_invoice.destroy');
+        });
     });
 
 });
