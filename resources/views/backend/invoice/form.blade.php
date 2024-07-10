@@ -7,170 +7,175 @@
         <div class="container-xxl flex-grow-1 container-p-y">
             <h4 class="py-3 mb-4"><span class="text-muted fw-light">{{ $title }} /</span> {{ $action }}</h4>
 
-            <div class="row">
-                <div class="col-md-12">
-                    <div class="card mb-4">
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-md-3 mb-4">
-                                    <label for="customer" class="form-label">Pelanggan</label>
-                                    <button style="width: auto; padding: 5px 10px; font-size: 12px; float:right; margin-bottom: 2%;" type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#editUser">
-                                        Add (+)
-                                    </button>
-                                    <select id="customer_id" name="customer_id" class="select2 form-select form-select-lg" data-allow-clear="true">
-                                        <option>-- Pilih Pelanggan --</option>
-
-                                        @foreach ($customers as $item)
-                                            <option value="{{ $item->id }}">{{ $item->name }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                        
-                                <div class="col-md-3 mb-4">
-                                    <label for="select2Basic" class="form-label">Tanggal Penerbitan</label>
-                                    <input type="date" class="form-control" id="floatingInput" placeholder="John Doe" aria-describedby="floatingInputHelp" />
-                                </div>
-
-                                <div class="col-md-3 mb-4">
-                                    <label for="select2Basic" class="form-label">Invoice Fisik</label>
-                                    <select id="invoice_fisik" class="select2 form-select form-select-lg" data-allow-clear="true">
-                                        <option value="AK">Alaska</option>
-                                        <option value="HI">Hawaii</option>
-                                        <option value="CA">California</option>
-                                    </select>
-                                </div>
-
-                                <div class="col-md-3 mb-4">
-                                    <label for="select2Basic" class="form-label">Nomor Invoice</label>
-                                    <input type="text" class="form-control" id="floatingInput" aria-describedby="floatingInputHelp" />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            <form action="{{ route('backend.invoice.store') }}" method="POST" enctype="multipart/form-data">
+                @csrf
+            
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="card mb-4">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-3 mb-4">
+                                        <label for="customer" class="form-label">Pelanggan</label><span style="color: red;">*</span>
+                                        <button style="width: auto; padding: 5px 10px; font-size: 12px; float:right; margin-bottom: 2%;" type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#editUser">
+                                            Add (+)
+                                        </button>
+                                        <select id="customer_id" name="customer_id" class="select2 form-select form-select-lg" data-allow-clear="true" required>
+                                            <option>-- Pilih Pelanggan --</option>
         
-
-                <!-- File input -->
-                <div class="col-md-12">
-                    <div class="card mb-4">
-                        <div class="card-body">
-                            <button style="float:right; margin-bottom: 5%;" type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#editUser">
-                                <i class="ti ti-plus me-sm-1"></i> Tambah Item
-                            </button>
+                                            @foreach ($customers as $item)
+                                                <option @isset($data) @if($data->customer_id == $item->id) selected  @endif @endisset value="{{ $item->id }}">{{ $item->name }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
                             
-                            <div class="row" style="margin-top: 10%;">
-                                <hr>
-                                <div class="col-md-2 mb-4">
-                                    <label for="select2Basic" class="form-label">Kategori Item</label> 
-                                    <select id="select2Basic" class="select2 form-select form-select-lg" data-allow-clear="true">
-                                        <option value="AK">Alaska</option>
-                                        <option value="HI">Hawaii</option>
-                                        <option value="CA">California</option>
-                                    </select>
-                                </div>
-                        
-                                <div class="col-md-2 mb-4">
-                                    <label for="select2Basic" class="form-label">Nama Produk</label>
-                                    <input type="text" class="form-control" id="floatingInput" placeholder="John Doe" aria-describedby="floatingInputHelp" />
-                                </div>
-
-                                <div class="col-md-1 mb-4">
-                                    <label for="select2Basic" class="form-label">Kuantiti</label>
-                                    <input type="text" class="form-control" id="floatingInput" placeholder="" aria-describedby="floatingInputHelp" />
-                                </div>
-
-                                <div class="col-md-2 mb-4">
-                                    <label for="select2Basic" class="form-label">Harga Jual</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text" id="basic-addon11">Rp.</span>
-                                        <input
-                                          type="text"
-                                          class="form-control"
-                                          placeholder=""
-                                          aria-label=""
-                                          aria-describedby="basic-addon11" />
+                                    <div class="col-md-3 mb-4">
+                                        <label for="select2Basic" class="form-label">Tanggal Penerbitan</label><span style="color: red;">*</span>
+                                        <input type="date" name="date_publisher" class="form-control" id="floatingInput" aria-describedby="floatingInputHelp" required @isset($data) value="{{ $data->date_publisher }}" @endisset/>
                                     </div>
-                                </div>
-
-                                <div class="col-md-2 mb-4">
-                                    <label for="select2Basic" class="form-label">Dari Bank</label> 
-                                    <select id="from_bank" class="select2 form-select form-select-lg" data-allow-clear="true">
-                                        <option value="AK">Alaska</option>
-                                        <option value="HI">Hawaii</option>
-                                        <option value="CA">California</option>
-                                    </select>
-                                </div>
-                                
-                                <div class="col-md-2 mb-4">
-                                    <label for="select2Basic" class="form-label">Harga Beli</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text" id="basic-addon11">Rp.</span>
-                                        <input
-                                          type="text"
-                                          class="form-control"
-                                          placeholder=""
-                                          aria-label=""
-                                          aria-describedby="basic-addon11" />
+        
+                                    <div class="col-md-3 mb-4">
+                                        <label for="physical_invoice_id" class="form-label">Invoice Fisik</label><span style="color: red;">*</span>
+                                        <select id="physical_invoice_id" class="select2 form-select form-select-lg" data-allow-clear="true" name="physical_invoice_id" required>
+                                            <option>-- Pilih Invoice Fisik --</option>
+        
+                                            @foreach ($physical_invoie as $item)
+                                                <option @isset($data) @if($data->physical_invoice_id == $item->id) selected  @endif @endisset value="{{ $item->id }}">{{ $item->name }}</option>
+                                            @endforeach
+                                        </select>
                                     </div>
-                                </div>
-
-                                <div class="col-md-1 mb-4">
-                                    <label for="select2Basic" class="form-label">Jumlah</label>
-                                    <label for="select2Basic" class="form-label">RP. 1000000</label>
-                                </div>
-
-                                <div class="col-md-6 mb-4">
-                                    <label for="select2Basic" class="form-label">Keterangan</label>
-                                    <textarea id="floatingInput" rows="4" class="form-control"></textarea>
-                                </div>
-
-                                <div class="col-md-2 mb-4">
-                                    <label for="select2Basic" class="form-label">Hutang Ke Vendor</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text" id="basic-addon11">Rp.</span>
-                                        <input
-                                          type="text"
-                                          class="form-control"
-                                          placeholder=""
-                                          aria-label=""
-                                          aria-describedby="basic-addon11" />
+        
+                                    <div class="col-md-3 mb-4">
+                                        <label for="select2Basic" class="form-label">Nomor Invoice</label><span style="color: red;">*</span>
+                                        <input type="text" class="form-control" id="floatingInput" aria-describedby="floatingInputHelp" name="invoice_number" required @isset($data) value="{{ $data->invoice_number }}" @endisset/>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
-
-                <div class="col-md-12">
-                    <div class="card mb-4">
-                        <div class="card-body">                            
-                            <dl class="row mb-0">
-                                <hr>
-                                <dt class="col-6 fw-normal text-heading">Total Harga Jual</dt>
-                                <dd class="col-6 text-end">Rp. 5.000.000</dd>
+            
         
-                                <hr>
-                                <dt class="col-6 fw-normal text-heading">Total Modal</dt>
-                                <dd class="col-6 text-end">Rp. 3.800.000</dd>
-
-                                <hr>
-                                <dt class="col-6 fw-normal text-heading">Total Keuntungan</dt>
-                                <dd class="col-6 text-end">Rp. 1.200.000</dd>
-                            </dl>
+                    <!-- File input -->
+                    <div class="col-md-12">
+                        <div class="card mb-4">
+                            <div class="card-body">
+                                <button id="addRowBtn" style="float:right; margin-bottom: 5%;" type="button" class="btn btn-warning">
+                                    <i class="ti ti-plus me-sm-1"></i> Tambah Item
+                                </button>
+                                
+                                <div id="rowsContainer">
+                                    <div class="row item-row" style="margin-top: 10%;">
+                                        <hr>
+                                        <div class="col-md-2 mb-4">
+                                            <label for="category_id" class="form-label">Kategori Item</label><span style="color: red;">*</span>
+                                            <select id="category_id" class="select2 form-select form-select-lg" data-allow-clear="true" name="category_id[]" required>
+                                                <option>-- Pilih Kategori --</option>
+        
+                                                @foreach ($products as $item)
+                                                    <option value="{{ $item->id }}">{{ $item->product_category }}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                        
+                                
+                                        <div class="col-md-2 mb-4">
+                                            <label for="select2Basic" class="form-label">Nama Produk</label><span style="color: red;">*</span>
+                                            <input type="text" class="form-control" id="floatingInput" placeholder="John Doe" aria-describedby="floatingInputHelp" name="product_name[]" required/>
+                                        </div>
+        
+                                        <div class="col-md-1 mb-4">
+                                            <label for="select2Basic" class="form-label">Kuantiti</label><span style="color: red;">*</span>
+                                            <input id="quantityInput" type="number" min="0" class="form-control quantityInput" id="floatingInput" placeholder="" aria-describedby="floatingInputHelp" name="qty[]" oninput="update_total(this)" required/>
+                                        </div>
+        
+                                        <div class="col-md-2 mb-4">
+                                            <label for="select2Basic" class="form-label">Harga Jual</label><span style="color: red;">*</span>
+                                            <div class="input-group">
+                                                <span class="input-group-text" id="basic-addon11">Rp.</span>
+                                                <input id="sellingPriceInput" type="text" class="form-control sellingPriceInput" placeholder="" aria-label="" aria-describedby="basic-addon11"  name="selling_price[]" oninput="update_total(this)" required/>
+                                            </div>
+                                        </div>
+        
+                                        <div class="col-md-2 mb-4">
+                                            <label for="from_bank" class="form-label">Dari Bank</label><span style="color: red;">*</span>
+                                            <select id="from_bank" class="select2 form-select form-select-lg" data-allow-clear="true" name="from_bank[]" required>
+                                                <option>-- Pilih Bank --</option>
+        
+                                                @foreach ($bank as $item)                                           
+                                                    <option value="{{ $item->id }}">{{ $item->bank_name }}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                        
+                                        <div class="col-md-2 mb-4">
+                                            <label for="select2Basic" class="form-label">Harga Beli</label><span style="color: red;">*</span>
+                                            <div class="input-group">
+                                                <span class="input-group-text" id="basic-addon11">Rp.</span>
+                                                <input id="purchase_price" oninput="update_total_purchase(this)" type="text" class="form-control purchase_price" placeholder="" aria-label="" aria-describedby="basic-addon11"  name="purchase_price[]" required/>
+                                            </div>
+                                        </div>
+        
+                                        <div class="col-md-1 mb-4">
+                                            <label for="select2Basic" class="form-label">Jumlah</label>
+                                            <label id="priceLabel" for="select2Basic" class="form-label priceLabel">RP. 0</label>
+                                        </div>
+        
+                                        <div class="col-md-6 mb-4">
+                                            <label for="select2Basic" class="form-label">Keterangan</label>
+                                            <textarea id="floatingInput" rows="4" class="form-control" name="note[]"></textarea>
+                                        </div>
+        
+                                        <div class="col-md-2 mb-4">
+                                            <label for="select2Basic" class="form-label">Hutang Ke Vendor</label>
+                                            <div class="input-group">
+                                                <span class="input-group-text" id="basic-addon11">Rp.</span>
+                                                <input
+                                                  type="text"
+                                                  class="form-control"
+                                                  placeholder=""
+                                                  aria-label=""
+                                                  aria-describedby="basic-addon11" 
+                                                  name="debt_to_vendors[]"
+                                                  />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
+        
+                    <div class="col-md-12">
+                        <div class="card mb-4">
+                            <div class="card-body">                            
+                                <dl class="row mb-0">
+                                    <hr>
+                                    <dt class="col-6 fw-normal text-heading">Total Harga Jual</dt>
+                                    <dd id="price_total_selling" class="col-6 text-end price_total_selling">Rp. 0</dd>
+            
+                                    <hr>
+                                    <dt class="col-6 fw-normal text-heading">Total Modal</dt>
+                                    <dd id="price_total_purchase" class="col-6 text-end price_total_purchase">Rp. 0</dd>
+        
+                                    <hr>
+                                    <dt class="col-6 fw-normal text-heading">Total Keuntungan</dt>
+                                    <dd id="total_profit" class="col-6 text-end total_profit">Rp. 0</dd>
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+        
+                    <div style="display: flex; justify-content: flex-end; margin: 3% 3% 0 0;">
+                        <a href="{{ route('backend.invoice.index') }}" type="button" class="btn btn-default">
+                            Kembali
+                        </a>
+        
+                        <button style="margin-left: 3%;"  type="submit" class="btn btn-warning">
+                            Buat
+                        </button>
+                    </div>
                 </div>
-
-                <div style="display: flex; justify-content: flex-end; margin: 3% 3% 0 0;">
-                    <a href="{{ route('backend.invoice.index') }}" type="button" class="btn btn-default">
-                        Kembali
-                    </a>
-
-                    <a style="margin-left: 3%;" href="{{ route('backend.invoice.create') }}" type="button" class="btn btn-warning">
-                        Buat
-                    </a>
-                </div>
-            </div>
+            </form>
         </div>
         <!-- / Content -->
         <!-- Edit User Modal -->
@@ -355,5 +360,127 @@
                 }
             });
         });
+
+        function initializeSelect2(element) {
+            $(element).select2({
+                theme: 'default' // Ensure Select2 uses Bootstrap 4 theme
+            });
+        }
+
+        initializeSelect2('#category_id');
+        initializeSelect2('#from_bank');
+
+        $('#addRowBtn').click(function() {
+            var clonedRow = $('.item-row:first').clone();
+            clonedRow.find('input, textarea').val('');
+
+            clonedRow.find('.select2-container').remove();
+            clonedRow.find('select').removeAttr('data-select2-id').removeAttr('aria-hidden').removeClass('select2-hidden-accessible').removeClass('select2');
+
+            let param_id = [];
+
+            clonedRow.find('select').each(function() {
+                var newId = $(this).attr('id') + '_' + $('.item-row').length;
+                $(this).attr('id', newId);
+                $(this).addClass('select2');
+                param_id.push(newId);
+            });
+
+
+            $('#rowsContainer').append(clonedRow);
+
+            initializeSelect2('#' + clonedRow.find('#category_id').attr('id'));
+            initializeSelect2('#' + clonedRow.find('#from_bank').attr('id'));
+
+            param_id.forEach(element => {
+                initializeSelect2('#' + clonedRow.find('#'+element).attr('id'));
+            });
+        
+
+            clonedRow.append('<div class="col-md-12 mb-4" style="display: flex; justify-content: flex-end;"><button type="button" class="btn btn-danger removeRowBtn"><i class="ti ti-trash me-sm-1"></i></button></div>');
+
+            clonedRow.find('.removeRowBtn').click(function() {
+                $(this).closest('.item-row').remove();
+            });
+        });
+
+        $(document).on('click', '.removeRowBtn', function() {
+            $(this).closest('.item-row').remove();
+            update_total_selling();
+            update_total_purchase();
+        });
+
+
+        let total_selling = 0;
+        let total_purchase = 0;
+        let total = 0;
+
+        function update_total(inputElement) {
+            var row = $(inputElement).closest('.item-row');
+
+            var quantityInput = row.find('.quantityInput');
+            var sellingPriceInput = row.find('.sellingPriceInput');
+            var priceLabel = row.find('.priceLabel');
+            // var price_total_selling = document.getElementById("price_total_selling");
+
+            // Get the values from the inputs
+            var quantity = quantityInput.val() || 0;
+
+            var pricePerUnit = sellingPriceInput.val().replace(/[^0-9]/g, '') || 0;
+
+            quantity = Number(quantity);
+            pricePerUnit = Number(pricePerUnit);
+
+            total = quantity * pricePerUnit;
+
+            priceLabel.text("RP. " + total.toLocaleString());
+
+            update_total_selling();
+        }
+
+        function update_total_purchase(){
+            total_purchase = 0;
+
+            $('.item-row').each(function() {
+                var purchase_price = $(this).find('.purchase_price');
+                var pricePerUnit = Number(purchase_price.val().replace(/[^0-9]/g, '') || 0);
+                total_purchase += pricePerUnit;
+            });
+
+            var priceTotalPurchase = document.getElementById("price_total_purchase");
+            if (priceTotalPurchase) {
+                priceTotalPurchase.textContent = "Rp. " + total_purchase.toLocaleString();
+            }
+
+            update_total_profit();
+        }
+
+        function update_total_selling() {
+            total_selling = 0;
+
+            $('.item-row').each(function() {
+                var quantityInput = $(this).find('.quantityInput');
+                var sellingPriceInput = $(this).find('.sellingPriceInput');
+                var quantity = Number(quantityInput.val() || 0);
+                var pricePerUnit = Number(sellingPriceInput.val().replace(/[^0-9]/g, '') || 0);
+                total_selling += quantity * pricePerUnit;
+            });
+
+            var priceTotalSellingElement = document.getElementById("price_total_selling");
+            if (priceTotalSellingElement) {
+                priceTotalSellingElement.textContent = "Rp. " + total_selling.toLocaleString();
+            }
+
+            update_total_profit();
+        }
+
+        function update_total_profit(){
+            var total_profit = total_selling - total_purchase;
+            var priceTotalProfit = document.getElementById("total_profit");
+
+            if (priceTotalProfit) {
+                priceTotalProfit.textContent = "Rp. " + total_profit.toLocaleString();
+            }
+        }
     </script>
 @endpush

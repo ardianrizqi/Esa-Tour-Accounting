@@ -14,7 +14,10 @@ Route::middleware('auth')->group(function () {
 
         Route::group(['prefix' => 'invoice'], function () {
             Route::get('/', 'InvoiceController@index')->name('invoice.index');
+            Route::get('/data', 'InvoiceController@data')->name('invoice.data');
             Route::get('/create', 'InvoiceController@form')->name('invoice.create');
+            Route::get('/edit/{id}', 'InvoiceController@form')->name('invoice.edit');
+            Route::post('/store', 'InvoiceController@store')->name('invoice.store');
             Route::get('/get-city/{province_id}', 'InvoiceController@get_city')->name('invoice.get_city');
             Route::get('/get-district/{city_id}', 'InvoiceController@get_district')->name('invoice.get_district');
             Route::post('/customer-store', 'InvoiceController@customer_store')->name('invoice.customer_store');

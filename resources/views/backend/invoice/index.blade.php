@@ -15,19 +15,23 @@
                 
                 <div class="card-datatable table-responsive pt-0">
 
-                    <table class="datatables-basic table">
+                    <table id="invoice-table" class="datatables-basic table">
                         <thead>
                             <tr>
                                 {{-- <th></th>
                                 <th></th> --}}
-                                <th>id</th>
+                                <th>ID</th>
                                 <th>Invoice</th>
-                                <th>Tanggal</th>
-                                <th>Pelanggan</th>
-                                <th>Item</th>
+                                <th>Tanggal Penerbitan</th>
+                                <th>Invoice Fisik</th>
+                                {{-- <th>Item</th>
                                 <th>Produk</th>
                                 <th>Keterangan</th>
                                 <th>Harga Jual</th>
+                                <th>NTA</th> --}}
+                                {{-- <th>Dari Bank</th> --}}
+                                <th>Status Cetak</th>
+                                <th>Status Hutang</th>
                                 <th>Action</th>
                             </tr>
                         </thead>
@@ -39,6 +43,9 @@
 @endsection
 
 @push('js')
-    <script src="{{ asset('assets/js/tables-datatables-basic.js') }}"></script>
+    <script src="{{ asset('assets/js/backend/invoice.js') }}"></script>
+    <script>
+        var deleteUrl = '{{ route("backend.product.destroy", ":id") }}';
+    </script>
 @endpush
 
