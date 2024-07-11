@@ -19,6 +19,7 @@ return new class extends Migration
             $table->float('purchase_price');
             $table->string('note')->nullable();
             $table->float('debt_to_vendors')->nullable();
+            $table->float('total_price_sell')->default(0);
             $table->unsignedBigInteger('created_user');
             $table->unsignedBigInteger('updated_user')->nullable();
 

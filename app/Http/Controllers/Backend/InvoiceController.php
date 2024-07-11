@@ -50,7 +50,7 @@ class InvoiceController extends Controller
             $data_d = InvoiceDetail::where('invoice_id', $data->id)->get();
         }
                 
-        return view('backend.invoice.form', compact('title', 'action', 'provinces', 'customers', 'products', 'physical_invoie', 'bank', 'data'));
+        return view('backend.invoice.form', compact('title', 'action', 'provinces', 'customers', 'products', 'physical_invoie', 'bank', 'data', 'data_d'));
     }
 
     public function get_city($province_id)
@@ -104,13 +104,29 @@ class InvoiceController extends Controller
                 'date_publisher'        => $request->date_publisher,
                 'physical_invoice_id'   => $request->physical_invoice_id,
                 'invoice_number'        => $request->invoice_number,
+                'price_total_selling'   => $request->price_total_selling,
+                'price_total_purchase'  => $request->price_total_purchase,
+                'total_profit'          => $request->total_profit,
                 'created_user'          => Auth::user()->id,
                 'updated_user'          => Auth::user()->id
             ];
 
-            $insert_h = Invoice::create($param_h);
+            if ($request->invoice_id) {
+                $find = Invoice::find($request->invoice_id);
+                $find->update($param_h);
 
+                // dd('masok');
+                $insert_h = $find;
+
+                $find_d = InvoiceDetail::where('invoice_id', $find->id)->delete();
+            }else{
+                $insert_h = Invoice::create($param_h);
+            }
+
+            // dd($request->category_id);
             foreach ($request->category_id as $key => $value) {
+                // dd($request);
+
                 $param_d = [
                     'invoice_id'        => $insert_h->id,
                     'category_id'       => $value,
@@ -121,19 +137,23 @@ class InvoiceController extends Controller
                     'purchase_price'    => $request->purchase_price[$key],
                     'note'              => $request->note[$key],
                     'debt_to_vendors'   => $request->debt_to_vendors[$key],
+                    'total_price_sell'  => $request->total_price_sell[$key],
                     'created_user'      => Auth::user()->id,
                     'updated_user'      => Auth::user()->id
                 ];
 
+                // dd($param_d);
+
                 $insert_d = InvoiceDetail::create($param_d);
             }
 
+            // dd('masok');
             DB::commit();
 
             Alert::success('Sukses', 'Berhasil Menyimpan Data');
             return redirect()->route('backend.invoice.index');
         } catch (\Throwable $th) {
-            // dd($th->getMessage());
+            dd($th->getMessage());
             DB::rollBack();
 
             Alert::error('Gagal', 'Terjadi Kesalahan Pada Server, Coba Lagi Kembali');

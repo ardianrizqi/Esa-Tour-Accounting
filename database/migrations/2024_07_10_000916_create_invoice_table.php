@@ -17,6 +17,9 @@ return new class extends Migration
             $table->string('invoice_number');
             $table->string('status')->default('Belum Lunas');
             $table->boolean('is_printed')->default(false);
+            $table->float('price_total_selling')->default(0);
+            $table->float('price_total_purchase')->default(0);
+            $table->float('total_profit')->default(0);
             $table->unsignedBigInteger('created_user');
             $table->unsignedBigInteger('updated_user')->nullable();
 

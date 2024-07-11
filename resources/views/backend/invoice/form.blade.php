@@ -64,82 +64,166 @@
                                 </button>
                                 
                                 <div id="rowsContainer">
-                                    <div class="row item-row" style="margin-top: 10%;">
-                                        <hr>
-                                        <div class="col-md-2 mb-4">
-                                            <label for="category_id" class="form-label">Kategori Item</label><span style="color: red;">*</span>
-                                            <select id="category_id" class="select2 form-select form-select-lg" data-allow-clear="true" name="category_id[]" required>
-                                                <option>-- Pilih Kategori --</option>
-        
-                                                @foreach ($products as $item)
-                                                    <option value="{{ $item->id }}">{{ $item->product_category }}</option>
-                                                @endforeach
-                                            </select>
-                                        </div>
-                                        
-                                
-                                        <div class="col-md-2 mb-4">
-                                            <label for="select2Basic" class="form-label">Nama Produk</label><span style="color: red;">*</span>
-                                            <input type="text" class="form-control" id="floatingInput" placeholder="John Doe" aria-describedby="floatingInputHelp" name="product_name[]" required/>
-                                        </div>
-        
-                                        <div class="col-md-1 mb-4">
-                                            <label for="select2Basic" class="form-label">Kuantiti</label><span style="color: red;">*</span>
-                                            <input id="quantityInput" type="number" min="0" class="form-control quantityInput" id="floatingInput" placeholder="" aria-describedby="floatingInputHelp" name="qty[]" oninput="update_total(this)" required/>
-                                        </div>
-        
-                                        <div class="col-md-2 mb-4">
-                                            <label for="select2Basic" class="form-label">Harga Jual</label><span style="color: red;">*</span>
-                                            <div class="input-group">
-                                                <span class="input-group-text" id="basic-addon11">Rp.</span>
-                                                <input id="sellingPriceInput" type="text" class="form-control sellingPriceInput" placeholder="" aria-label="" aria-describedby="basic-addon11"  name="selling_price[]" oninput="update_total(this)" required/>
+                                    <input type="hidden" name="invoice_id" @isset($data) value="{{ $data->id }}" @endisset>
+                                    @if (isset($data_d))
+                                        @foreach ($data_d as $key => $value)
+                                            <div class="row item-row" style="margin-top: 10%;">
+                                                <hr>
+                                                <div class="col-md-2 mb-4">
+                                                    <label @if($key == 0) for="category_id" @else for="category_id_"{{ $key }} @endif class="form-label">Kategori Item</label><span style="color: red;">*</span>
+                                                    <select @if($key == 0) id="category_id" @else id="category_id_"{{ $key }} @endif class="select2 form-select form-select-lg" data-allow-clear="true" name="category_id[]" required>
+                                                        <option>-- Pilih Kategori --</option>
+                
+                                                        @foreach ($products as $item)
+                                                            <option @if($value->category_id == $item->id) selected  @endif value="{{ $item->id }}">{{ $item->product_category }}</option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+                                                
+                                                <div class="col-md-2 mb-4">
+                                                    <label for="select2Basic" class="form-label">Nama Produk</label><span style="color: red;">*</span>
+                                                    <input type="text" class="form-control" id="floatingInput" placeholder="John Doe" aria-describedby="floatingInputHelp" name="product_name[]" required value="{{ $value->product_name }}"/>
+                                                </div>
+                
+                                                <div class="col-md-1 mb-4">
+                                                    <label for="select2Basic" class="form-label">Kuantiti</label><span style="color: red;">*</span>
+                                                    <input id="quantityInput" type="number" min="0" class="form-control quantityInput" id="floatingInput" placeholder="" aria-describedby="floatingInputHelp" name="qty[]" value="{{ $value->qty }}" oninput="update_total(this)" required/>
+                                                </div>
+                
+                                                <div class="col-md-2 mb-4">
+                                                    <label for="select2Basic" class="form-label">Harga Jual</label><span style="color: red;">*</span>
+                                                    <div class="input-group">
+                                                        <span class="input-group-text" id="basic-addon11">Rp.</span>
+                                                        <input id="sellingPriceInput" type="text" class="form-control sellingPriceInput" placeholder="" aria-label="" aria-describedby="basic-addon11"  name="selling_price[]" value="{{ $value->selling_price }}" oninput="update_total(this)" required/>
+                                                    </div>
+                                                </div>
+                
+                                                <div class="col-md-2 mb-4">
+                                                    <label @if($key == 0) for="from_bank" @else for="from_bank_"{{ $key }} @endif class="form-label">Dari Bank</label><span style="color: red;">*</span>
+                                                    <select @if($key == 0) id="from_bank" @else id="from_bank_"{{ $key }} @endif class="select2 form-select form-select-lg" data-allow-clear="true" name="from_bank[]" required>
+                                                        <option>-- Pilih Bank --</option>
+                
+                                                        @foreach ($bank as $item)                                           
+                                                            <option @if($value->from_bank == $item->id) selected @endif value="{{ $item->id }}">{{ $item->bank_name }}</option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+                                                
+                                                <div class="col-md-2 mb-4">
+                                                    <label for="select2Basic" class="form-label">Harga Beli</label><span style="color: red;">*</span>
+                                                    <div class="input-group">
+                                                        <span class="input-group-text" id="basic-addon11">Rp.</span>
+                                                        <input id="purchase_price" value="{{ $value->purchase_price }}" oninput="update_total_purchase(this)" type="text" class="form-control purchase_price" placeholder="" aria-label="" aria-describedby="basic-addon11"  name="purchase_price[]" required/>
+                                                    </div>
+                                                </div>
+                
+                                                <div class="col-md-1 mb-4">
+                                                    <label for="select2Basic" class="form-label">Jumlah</label>
+                                                    <label id="priceLabel" for="select2Basic" class="form-label priceLabel">RP. {{ number_format($value->total_price_sell, 0) }}</label>
+                                                    <input id="total_price_sell" name="total_price_sell[]" class="total_price_sell" type="hidden" value="{{ $value->total_price_sell }}">
+                                                </div>
+                
+                                                <div class="col-md-6 mb-4">
+                                                    <label for="select2Basic" class="form-label">Keterangan</label>
+                                                    <textarea id="floatingInput" rows="4" class="form-control" name="note[]">{{ $value->note }}</textarea>
+                                                </div>
+                
+                                                <div class="col-md-2 mb-4">
+                                                    <label for="select2Basic" class="form-label">Hutang Ke Vendor</label>
+                                                    <div class="input-group">
+                                                        <span class="input-group-text" id="basic-addon11">Rp.</span>
+                                                        <input
+                                                        type="text"
+                                                        class="form-control"
+                                                        placeholder=""
+                                                        aria-label=""
+                                                        aria-describedby="basic-addon11" 
+                                                        name="debt_to_vendors[]"
+                                                        value="{{ $value->debt_to_vendors }}"
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    @else 
+                                        <div class="row item-row" style="margin-top: 10%;">
+                                            <hr>
+                                            <div class="col-md-2 mb-4">
+                                                <label for="category_id" class="form-label">Kategori Item</label><span style="color: red;">*</span>
+                                                <select id="category_id" class="select2 form-select form-select-lg" data-allow-clear="true" name="category_id[]" required>
+                                                    <option>-- Pilih Kategori --</option>
+            
+                                                    @foreach ($products as $item)
+                                                        <option value="{{ $item->id }}">{{ $item->product_category }}</option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                            
+                                    
+                                            <div class="col-md-2 mb-4">
+                                                <label for="select2Basic" class="form-label">Nama Produk</label><span style="color: red;">*</span>
+                                                <input type="text" class="form-control" id="floatingInput" placeholder="John Doe" aria-describedby="floatingInputHelp" name="product_name[]" required/>
+                                            </div>
+            
+                                            <div class="col-md-1 mb-4">
+                                                <label for="select2Basic" class="form-label">Kuantiti</label><span style="color: red;">*</span>
+                                                <input id="quantityInput" type="number" min="0" class="form-control quantityInput" id="floatingInput" placeholder="" aria-describedby="floatingInputHelp" name="qty[]" oninput="update_total(this)" required/>
+                                            </div>
+            
+                                            <div class="col-md-2 mb-4">
+                                                <label for="select2Basic" class="form-label">Harga Jual</label><span style="color: red;">*</span>
+                                                <div class="input-group">
+                                                    <span class="input-group-text" id="basic-addon11">Rp.</span>
+                                                    <input id="sellingPriceInput" type="text" class="form-control sellingPriceInput" placeholder="" aria-label="" aria-describedby="basic-addon11"  name="selling_price[]" oninput="update_total(this)" required/>
+                                                </div>
+                                            </div>
+            
+                                            <div class="col-md-2 mb-4">
+                                                <label for="from_bank" class="form-label">Dari Bank</label><span style="color: red;">*</span>
+                                                <select id="from_bank" class="select2 form-select form-select-lg" data-allow-clear="true" name="from_bank[]" required>
+                                                    <option>-- Pilih Bank --</option>
+            
+                                                    @foreach ($bank as $item)                                           
+                                                        <option value="{{ $item->id }}">{{ $item->bank_name }}</option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                            
+                                            <div class="col-md-2 mb-4">
+                                                <label for="select2Basic" class="form-label">Harga Beli</label><span style="color: red;">*</span>
+                                                <div class="input-group">
+                                                    <span class="input-group-text" id="basic-addon11">Rp.</span>
+                                                    <input id="purchase_price" oninput="update_total_purchase(this)" type="text" class="form-control purchase_price" placeholder="" aria-label="" aria-describedby="basic-addon11"  name="purchase_price[]" required/>
+                                                </div>
+                                            </div>
+            
+                                            <div class="col-md-1 mb-4">
+                                                <label for="select2Basic" class="form-label">Jumlah</label>
+                                                <label id="priceLabel" for="select2Basic" class="form-label priceLabel">RP. 0</label>
+                                                <input id="total_price_sell" name="total_price_sell[]" class="total_price_sell" type="hidden">
+                                            </div>
+            
+                                            <div class="col-md-6 mb-4">
+                                                <label for="select2Basic" class="form-label">Keterangan</label>
+                                                <textarea id="floatingInput" rows="4" class="form-control" name="note[]"></textarea>
+                                            </div>
+            
+                                            <div class="col-md-2 mb-4">
+                                                <label for="select2Basic" class="form-label">Hutang Ke Vendor</label>
+                                                <div class="input-group">
+                                                    <span class="input-group-text" id="basic-addon11">Rp.</span>
+                                                    <input
+                                                    type="text"
+                                                    class="form-control"
+                                                    placeholder=""
+                                                    aria-label=""
+                                                    aria-describedby="basic-addon11" 
+                                                    name="debt_to_vendors[]"
+                                                    />
+                                                </div>
                                             </div>
                                         </div>
-        
-                                        <div class="col-md-2 mb-4">
-                                            <label for="from_bank" class="form-label">Dari Bank</label><span style="color: red;">*</span>
-                                            <select id="from_bank" class="select2 form-select form-select-lg" data-allow-clear="true" name="from_bank[]" required>
-                                                <option>-- Pilih Bank --</option>
-        
-                                                @foreach ($bank as $item)                                           
-                                                    <option value="{{ $item->id }}">{{ $item->bank_name }}</option>
-                                                @endforeach
-                                            </select>
-                                        </div>
-                                        
-                                        <div class="col-md-2 mb-4">
-                                            <label for="select2Basic" class="form-label">Harga Beli</label><span style="color: red;">*</span>
-                                            <div class="input-group">
-                                                <span class="input-group-text" id="basic-addon11">Rp.</span>
-                                                <input id="purchase_price" oninput="update_total_purchase(this)" type="text" class="form-control purchase_price" placeholder="" aria-label="" aria-describedby="basic-addon11"  name="purchase_price[]" required/>
-                                            </div>
-                                        </div>
-        
-                                        <div class="col-md-1 mb-4">
-                                            <label for="select2Basic" class="form-label">Jumlah</label>
-                                            <label id="priceLabel" for="select2Basic" class="form-label priceLabel">RP. 0</label>
-                                        </div>
-        
-                                        <div class="col-md-6 mb-4">
-                                            <label for="select2Basic" class="form-label">Keterangan</label>
-                                            <textarea id="floatingInput" rows="4" class="form-control" name="note[]"></textarea>
-                                        </div>
-        
-                                        <div class="col-md-2 mb-4">
-                                            <label for="select2Basic" class="form-label">Hutang Ke Vendor</label>
-                                            <div class="input-group">
-                                                <span class="input-group-text" id="basic-addon11">Rp.</span>
-                                                <input
-                                                  type="text"
-                                                  class="form-control"
-                                                  placeholder=""
-                                                  aria-label=""
-                                                  aria-describedby="basic-addon11" 
-                                                  name="debt_to_vendors[]"
-                                                  />
-                                            </div>
-                                        </div>
-                                    </div>
+                                    @endif
                                 </div>
                             </div>
                         </div>
@@ -151,15 +235,36 @@
                                 <dl class="row mb-0">
                                     <hr>
                                     <dt class="col-6 fw-normal text-heading">Total Harga Jual</dt>
-                                    <dd id="price_total_selling" class="col-6 text-end price_total_selling">Rp. 0</dd>
-            
+                                    <dd id="price_total_selling" class="col-6 text-end price_total_selling">
+                                        @if (isset($data))
+                                            Rp. {{ number_format($data->price_total_selling) }}
+                                        @else 
+                                            Rp. 0
+                                        @endif
+                                    </dd>
+                                    <input id="price_selling" name="price_total_selling" type="hidden">
+
                                     <hr>
                                     <dt class="col-6 fw-normal text-heading">Total Modal</dt>
-                                    <dd id="price_total_purchase" class="col-6 text-end price_total_purchase">Rp. 0</dd>
+                                    <dd id="price_total_purchase" class="col-6 text-end price_total_purchase">
+                                        @if (isset($data))
+                                            Rp. {{ number_format($data->price_total_purchase) }}
+                                        @else 
+                                            Rp. 0
+                                        @endif
+                                    </dd>
+                                    <input id="price_purchase" name="price_total_purchase" type="hidden">
         
                                     <hr>
                                     <dt class="col-6 fw-normal text-heading">Total Keuntungan</dt>
-                                    <dd id="total_profit" class="col-6 text-end total_profit">Rp. 0</dd>
+                                    <dd id="total_profit" class="col-6 text-end total_profit">
+                                        @if (isset($data))
+                                            Rp. {{ number_format($data->total_profit) }}
+                                        @else 
+                                            Rp. 0
+                                        @endif
+                                    </dd>
+                                    <input id="profit" name="total_profit" type="hidden">
                                 </dl>
                             </div>
                         </div>
@@ -374,8 +479,11 @@
             var clonedRow = $('.item-row:first').clone();
             clonedRow.find('input, textarea').val('');
 
+            // console.log(clonedRow);
             clonedRow.find('.select2-container').remove();
-            clonedRow.find('select').removeAttr('data-select2-id').removeAttr('aria-hidden').removeClass('select2-hidden-accessible').removeClass('select2');
+            // clonedRow.find('select').removeAttr('data-select2-id').removeAttr('aria-hidden').removeClass('select2-hidden-accessible').removeClass('select2');
+
+            // console.log(clonedRow);
 
             let param_id = [];
 
@@ -434,23 +542,31 @@
             total = quantity * pricePerUnit;
 
             priceLabel.text("RP. " + total.toLocaleString());
+            var total_price_sell = row.find('.total_price_sell');
+            total_price_sell.val(total);
 
             update_total_selling();
+            update_total_purchase();
         }
 
         function update_total_purchase(){
             total_purchase = 0;
 
             $('.item-row').each(function() {
+                var quantityInput = $(this).find('.quantityInput');
+                var quantity = Number(quantityInput.val() || 0);
                 var purchase_price = $(this).find('.purchase_price');
                 var pricePerUnit = Number(purchase_price.val().replace(/[^0-9]/g, '') || 0);
-                total_purchase += pricePerUnit;
+                total_purchase += quantity * pricePerUnit;
             });
 
             var priceTotalPurchase = document.getElementById("price_total_purchase");
             if (priceTotalPurchase) {
                 priceTotalPurchase.textContent = "Rp. " + total_purchase.toLocaleString();
             }
+
+            $('#price_purchase').val(total_purchase);
+            
 
             update_total_profit();
         }
@@ -471,6 +587,8 @@
                 priceTotalSellingElement.textContent = "Rp. " + total_selling.toLocaleString();
             }
 
+            $('#price_selling').val(total_selling);
+
             update_total_profit();
         }
 
@@ -481,6 +599,8 @@
             if (priceTotalProfit) {
                 priceTotalProfit.textContent = "Rp. " + total_profit.toLocaleString();
             }
+
+            $('#profit').val(total_profit);
         }
     </script>
 @endpush
