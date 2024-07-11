@@ -39,7 +39,13 @@ class InvoiceController extends Controller
         $data_d             = null;
         $title              = $this->title;
         $provinces          = Province::all();
-        $action             = 'Tambah';
+
+        if ($id) {
+            $action = 'Ubah';
+        }else{
+            $action = 'Tambah';
+        }
+
         $customers          = Customer::all();
         $products           = Product::all();
         $physical_invoie    = PhysicalInvoice::all();
@@ -168,4 +174,21 @@ class InvoiceController extends Controller
         return response()->json(['data' => $data]);
     }
 
+    public function show($id)
+    {
+        $data               = null;
+        $data_d             = null;
+        $title              = $this->title;
+        $provinces          = Province::all();
+        $action             = 'Detail';
+        $customers          = Customer::all();
+        $products           = Product::all();
+        $physical_invoie    = PhysicalInvoice::all();
+        $bank               = Bank::all();
+
+        $data   = Invoice::find($id);
+        $data_d = InvoiceDetail::where('invoice_id', $data->id)->get();
+    
+        return view('backend.invoice.show', compact('title', 'action', 'provinces', 'customers', 'products', 'physical_invoie', 'bank', 'data', 'data_d'));
+    }
 }

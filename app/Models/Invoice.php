@@ -16,4 +16,10 @@ class Invoice extends Model
     {
         return $this->belongsTo(PhysicalInvoice::class, 'physical_invoice_id', 'id');
     }
+
+    public function customer()
+    {
+        return $this->belongsTo(Customer::class, 'customer_id', 'id');
+    }
+
 }

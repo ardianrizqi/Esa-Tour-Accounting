@@ -64,16 +64,7 @@ $(function () {
                     searchable: false,
                     render: function (data, type, full, meta) {
                       return (
-                        // '<div class="d-inline-block">' +
-                        // '<a href="javascript:;" class="btn btn-sm btn-icon dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="text-primary ti ti-dots-vertical"></i></a>' +
-                        // '<ul class="dropdown-menu dropdown-menu-end m-0">' +
-                        //     '<li><a href="javascript:;" class="dropdown-item">Details</a></li>' +
-                        //     '<li><a href="javascript:;" class="dropdown-item">Archive</a></li>' +
-                        //     '<div class="dropdown-divider"></div>' +
-                        //     '<li><a href="javascript:;" class="dropdown-item text-danger delete-record">Delete</a></li>' +
-                        // '</ul>' +
-                        // '</div>' +
-                        '<a href="invoice/edit/'+ full.id + '" class="btn btn-sm btn-icon item-edit"><i class="text-primary ti ti-eye"></i></a>'+
+                        '<a href="invoice/show/'+ full.id + '" class="btn btn-sm btn-icon item-edit"><i class="text-primary ti ti-eye"></i></a>'+
                         '<a href="invoice/edit/'+ full.id + '" class="btn btn-sm btn-icon item-edit"><i class="text-primary ti ti-pencil"></i></a>'+
                         '<a href="javascript:;" class="btn btn-sm btn-icon item-delete"><i class="text-primary ti ti-trash"></i></a>'
                       );
