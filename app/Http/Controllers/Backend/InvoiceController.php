@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Product;
 use App\Models\PhysicalInvoice;
 use App\Models\Bank;
+use App\Models\BankHistory;
 use App\Models\Invoice;
 use App\Models\InvoiceDetail;
 use RealRashid\SweetAlert\Facades\Alert;
@@ -114,7 +115,8 @@ class InvoiceController extends Controller
                 'price_total_purchase'  => $request->price_total_purchase,
                 'total_profit'          => $request->total_profit,
                 'created_user'          => Auth::user()->id,
-                'updated_user'          => Auth::user()->id
+                'updated_user'          => Auth::user()->id,
+                'receivables'           => $request->price_total_selling
             ];
 
             if ($request->invoice_id) {
@@ -159,7 +161,7 @@ class InvoiceController extends Controller
             Alert::success('Sukses', 'Berhasil Menyimpan Data');
             return redirect()->route('backend.invoice.index');
         } catch (\Throwable $th) {
-            dd($th->getMessage());
+            // dd($th->getMessage());
             DB::rollBack();
 
             Alert::error('Gagal', 'Terjadi Kesalahan Pada Server, Coba Lagi Kembali');
@@ -176,8 +178,6 @@ class InvoiceController extends Controller
 
     public function show($id)
     {
-        $data               = null;
-        $data_d             = null;
         $title              = $this->title;
         $provinces          = Province::all();
         $action             = 'Detail';
@@ -188,7 +188,74 @@ class InvoiceController extends Controller
 
         $data   = Invoice::find($id);
         $data_d = InvoiceDetail::where('invoice_id', $data->id)->get();
+        $customer_payment = BankHistory::where('invoice_id', $data->id)
+                            ->where('type', 'customer_payment')
+                            ->get();
     
-        return view('backend.invoice.show', compact('title', 'action', 'provinces', 'customers', 'products', 'physical_invoie', 'bank', 'data', 'data_d'));
+        return view('backend.invoice.show', compact('title', 'action', 'provinces', 'customers', 'products', 'physical_invoie', 'bank', 'data', 'data_d', 'customer_payment'));
+    }
+
+    public function update_details($id, Request $request)
+    {
+        // dd($request);
+        DB::beginTransaction();
+
+        try {
+            $invoice = Invoice::find($id);
+            $check = BankHistory::where('invoice_id', $id)
+                    ->where('type', 'customer_payment')
+                    ->get();
+
+            foreach ($check as $key => $value) {
+                $bank = Bank::find($value->bank_id);
+                calculate_income($bank, $value->nominal, true);
+                calculate_receivables($invoice, $value->nominal, true);
+                
+                $value->delete();
+            }
+
+            if ($request->nominal) {
+                foreach ($request->nominal as $key => $value) {
+                    $bank = Bank::find($request->bank_id[$key]);
+                    calculate_income($bank, $value);
+
+                    $note = '-';
+    
+                    if ($request->note[$key] !== null) {
+                        $note = $request->note[$key];
+                    }
+    
+                    $transaction_name = 'Pembayaran Customer dari '.$invoice->invoice_number. ' Ket: '.$note;
+    
+                    $create = BankHistory::create([
+                        'bank_id'           => $request->bank_id[$key],
+                        'transaction_name'  => $transaction_name,
+                        'invoice_id'        => $id,
+                        'date'              => $request->date[$key],
+                        'type'              => 'customer_payment',
+                        'nominal'           => $value,
+                        'note'              => $note,
+                        'created_user'      => Auth::user()->id,
+                        'updated_user'      => Auth::user()->id
+                    ]);
+
+                    calculate_receivables($invoice, $value);
+                }
+            }
+
+        
+           
+            DB::commit();
+
+            Alert::success('Sukses', 'Berhasil Menyimpan Data');
+            return redirect()->back();
+        } catch (\Throwable $th) {
+            dd($th->getMessage());
+            DB::rollBack();
+
+            Alert::error('Gagal', 'Terjadi Kesalahan Pada Server, Coba Lagi Kembali');
+            return redirect()->back();
+        }
+     
     }
 }

@@ -20,6 +20,7 @@ return new class extends Migration
             $table->float('price_total_selling')->default(0);
             $table->float('price_total_purchase')->default(0);
             $table->float('total_profit')->default(0);
+            $table->float('receivables')->default(0);
             $table->unsignedBigInteger('created_user');
             $table->unsignedBigInteger('updated_user')->nullable();
 

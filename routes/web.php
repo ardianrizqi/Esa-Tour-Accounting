@@ -19,6 +19,7 @@ Route::middleware('auth')->group(function () {
             Route::get('/edit/{id}', 'InvoiceController@form')->name('invoice.edit');
             Route::post('/store', 'InvoiceController@store')->name('invoice.store');
             Route::get('/show/{id}', 'InvoiceController@show')->name('invoice.show');
+            Route::post('/update-detail/{id}', 'InvoiceController@update_details')->name('invoice.update_details');
             Route::get('/get-city/{province_id}', 'InvoiceController@get_city')->name('invoice.get_city');
             Route::get('/get-district/{city_id}', 'InvoiceController@get_district')->name('invoice.get_district');
             Route::post('/customer-store', 'InvoiceController@customer_store')->name('invoice.customer_store');
