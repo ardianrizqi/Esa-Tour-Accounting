@@ -72,6 +72,15 @@ Route::middleware('auth')->group(function () {
             Route::get('/edit/{id}', 'CreditDebitController@form')->name('credit_debit.edit');
             Route::delete('/destroy/{id}', 'CreditDebitController@destroy')->name('credit_debit.destroy');
         });
+
+        Route::group(['prefix' => 'asset'], function () {
+            Route::get('/', 'AssetController@index')->name('asset.index');
+            Route::get('/data', 'AssetController@data')->name('asset.data');
+            Route::get('/create', 'AssetController@form')->name('asset.create');
+            Route::post('/store', 'AssetController@store')->name('asset.store');
+            Route::get('/edit/{id}', 'AssetController@form')->name('asset.edit');
+            Route::delete('/destroy/{id}', 'AssetController@destroy')->name('asset.destroy');
+        });
     });
 
 });

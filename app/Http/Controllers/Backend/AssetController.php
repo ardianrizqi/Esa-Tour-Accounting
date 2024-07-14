@@ -3,33 +3,33 @@
 namespace App\Http\Controllers\Backend;
 
 use App\Http\Controllers\Controller;
+use App\Models\Asset;
 use App\Models\Bank;
-use App\Models\CreditDebit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use RealRashid\SweetAlert\Facades\Alert;
 use Illuminate\Support\Facades\Auth;
 
-class CreditDebitController extends Controller
+class AssetController extends Controller
 {
     public $title;
 
     public function __construct()
     {
-        $this->title = 'Credit & Debit Note';
+        $this->title = 'Modal';
     }
 
     public function index()
     {
         $title      = $this->title;
                 
-        return view('backend.credit_debit.index', compact('title'));
+        return view('backend.asset.index', compact('title'));
     }
 
     public function data()
     {
         // dd('masok');
-        $data = CreditDebit::with('bank')->orderBy('created_at', 'desc')->get();
+        $data = Asset::with('bank')->orderBy('created_at', 'desc')->get();
 
         return response()->json(['data' => $data]);
     }
@@ -43,10 +43,10 @@ class CreditDebitController extends Controller
 
         if ($id) {
             $action = 'Edit';
-            $data = CreditDebit::find($id);
+            $data = Asset::find($id);
         }
                 
-        return view('backend.credit_debit.form', compact('title', 'action', 'data', 'banks'));
+        return view('backend.asset.form', compact('title', 'action', 'data', 'banks'));
     }
 
     public function store(Request $request)
@@ -54,12 +54,12 @@ class CreditDebitController extends Controller
         DB::beginTransaction();
 
         try {
-            if ($request->credit_debit_id) {
+            if ($request->asset_id) {
                 $requestData = array_merge($request->all(), [
                     'updated_user'  => Auth::user()->id,
                 ]);
 
-                $data = CreditDebit::find($request->bank_id);
+                $data = Asset::find($request->bank_id);
                 $data->update($requestData);
             }else{
                 $requestData = array_merge($request->all(), [
@@ -67,14 +67,14 @@ class CreditDebitController extends Controller
                     'updated_user'  => Auth::user()->id,
                 ]);
 
-                $data = CreditDebit::create($requestData);
+                $data = Asset::create($requestData);
             }
 
             DB::commit();
 
 
             Alert::success('Sukses', 'Berhasil Menyimpan Data');
-            return redirect()->route('backend.credit_debit.index');
+            return redirect()->route('backend.asset.index');
         } catch (\Throwable $th) {
             // dd($th->getMessage());
             DB::rollBack();
@@ -89,7 +89,7 @@ class CreditDebitController extends Controller
         DB::beginTransaction();
 
         try {
-            $data = CreditDebit::find($id);
+            $data = Asset::find($id);
             $data->delete();
 
             DB::commit();
