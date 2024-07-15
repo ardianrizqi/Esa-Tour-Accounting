@@ -91,6 +91,15 @@ Route::middleware('auth')->group(function () {
             Route::delete('/destroy/{id}', 'ExpenseController@destroy')->name('expense.destroy');
             Route::post('/category-store', 'ExpenseController@category_store')->name('expense.category_store');
         });
+
+        Route::group(['prefix' => 'deposit'], function () {
+            Route::get('/', 'DepositController@index')->name('deposit.index');
+            Route::get('/data', 'DepositController@data')->name('deposit.data');
+            Route::get('/create', 'DepositController@form')->name('deposit.create');
+            Route::post('/store', 'DepositController@store')->name('deposit.store');
+            Route::get('/edit/{id}', 'DepositController@form')->name('deposit.edit');
+            Route::delete('/destroy/{id}', 'DepositController@destroy')->name('deposit.destroy');
+        });
     });
 
 });

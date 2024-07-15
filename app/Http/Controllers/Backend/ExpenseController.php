@@ -91,7 +91,7 @@ class ExpenseController extends Controller
         DB::beginTransaction();
 
         try {
-            $data = Asset::find($id);
+            $data = Expense::find($id);
             $data->delete();
 
             DB::commit();

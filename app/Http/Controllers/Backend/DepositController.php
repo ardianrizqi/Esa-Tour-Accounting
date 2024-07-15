@@ -4,14 +4,13 @@ namespace App\Http\Controllers\Backend;
 
 use App\Http\Controllers\Controller;
 use App\Models\Bank;
+use App\Models\Deposit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use RealRashid\SweetAlert\Facades\Alert;
 use Illuminate\Support\Facades\Auth;
-use App\Models\Customer;
 
-
-class BankController extends Controller
+class DepositController extends Controller
 {
     public $title;
 
@@ -24,12 +23,12 @@ class BankController extends Controller
     {
         $title      = $this->title;
                 
-        return view('backend.bank.index', compact('title'));
+        return view('backend.deposit.index', compact('title'));
     }
 
     public function data()
     {
-        $data = Bank::orderBy('created_at', 'desc')->get();
+        $data = Deposit::with('bank')->orderBy('created_at', 'desc')->get();
 
         return response()->json(['data' => $data]);
     }
@@ -39,13 +38,13 @@ class BankController extends Controller
         $data       = null;
         $title      = $this->title;
         $action     = 'Tambah';
-        $accounts   = Customer::all();
+        $banks   = Bank::all();
 
         if ($id) {
-            $data = Bank::find($id);
+            $data = Deposit::find($id);
         }
                 
-        return view('backend.bank.form', compact('title', 'action', 'data', 'accounts'));
+        return view('backend.deposit.form', compact('title', 'action', 'data', 'banks'));
     }
 
     public function store(Request $request)
@@ -53,30 +52,29 @@ class BankController extends Controller
         DB::beginTransaction();
 
         try {
-            if ($request->product_id) {
+            if ($request->deposit_id) {
                 $requestData = array_merge($request->all(), [
                     'updated_user'  => Auth::user()->id,
-                    'balance'       => $request->beginning_balance
                 ]);
 
-                $data = Bank::find($request->bank_id);
+                $data = Deposit::find($request->bank_id);
                 $data->update($requestData);
             }else{
                 $requestData = array_merge($request->all(), [
                     'created_user'  => Auth::user()->id,
                     'updated_user'  => Auth::user()->id,
-                    'balance'       => $request->beginning_balance
                 ]);
 
-                $data = Bank::create($requestData);
+                $data = Deposit::create($requestData);
             }
 
             DB::commit();
 
 
             Alert::success('Sukses', 'Berhasil Menyimpan Data');
-            return redirect()->route('backend.bank.index');
+            return redirect()->route('backend.deposit.index');
         } catch (\Throwable $th) {
+            // dd($th->getMessage());
             DB::rollBack();
 
             Alert::error('Gagal', 'Terjadi Kesalahan Pada Server, Coba Lagi Kembali');
@@ -89,7 +87,7 @@ class BankController extends Controller
         DB::beginTransaction();
 
         try {
-            $data = Bank::find($id);
+            $data = Deposit::find($id);
             $data->delete();
 
             DB::commit();

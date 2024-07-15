@@ -1,5 +1,5 @@
 @extends('layouts.backend.app')
-@section('expense', 'active')
+@section('deposit', 'active')
 @section('content')
 <div class="content-wrapper">
     <!-- Content -->
@@ -11,11 +11,11 @@
                 <div class="card mb-4">
                     <div class="card-body">
                         <div class="row">
-                            <form action="{{ route('backend.expense.store') }}" method="POST"
+                            <form action="{{ route('backend.deposit.store') }}" method="POST"
                                 enctype="multipart/form-data" class="row g-3">
                                 @csrf
 
-                                <input type="hidden" id="expense_id" name="expense_id" @isset($data) value="{{ $data->id }}"
+                                <input type="hidden" id="deposit_id" name="deposit_id" @isset($data) value="{{ $data->id }}"
                                     @endisset>
 
                                 <div class="col-12 col-md-6">
@@ -26,22 +26,19 @@
                                 </div>
 
                                 <div class="col-12 col-md-6">
-                                    <label class="form-label" for="account_id">Kategori Pengeluaran</label><span style="color: red;">*</span>
-                                    <button style="width: auto; padding: 5px 10px; font-size: 12px; float:right; margin-bottom: 2%;" type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#category_expense">
-                                        Add (+)
-                                    </button>
-                                    <select id="category_expense_id" name="category_expense_id" class="select2 form-select"
+                                    <label class="form-label" for="account_id">Dari bank</label><span style="color: red;">*</span>
+                                    <select id="bank_id" name="bank_id" class="select2 form-select"
                                         aria-label="Default select example" required>
-                                        <option>-- Pilih Kategori --</option>
+                                        <option>-- Pilih Bank --</option>
 
-                                        @foreach($category_expense as $item)
-                                            <option @isset($data) @if($item->id == $data->category_expense_id) selected @endif @endisset value="{{ $item->id }}" >{{ $item->name }}</option>
+                                        @foreach($banks as $item)
+                                            <option @isset($data) @if($item->id == $data->bank_id) selected @endif @endisset value="{{ $item->id }}" >{{ $item->bank_name }}</option>
                                         @endforeach
                                     </select>
                                 </div>
 
                                 <div class="col-12 col-md-6">
-                                    <label class="form-label" for="modalEditUserFirstName">Nama</label><span
+                                    <label class="form-label" for="modalEditUserFirstName">Nama Deposit</label><span
                                         style="color: red;"> *</span>
                                     <input type="text" id="name" name="name" class="form-control"
                                         placeholder="Ketik Nama" required @isset($data) value="{{ $data->name }}" @endisset/>
@@ -56,26 +53,8 @@
                                     </div>
                                 </div>
 
-                                <div class="col-12 col-md-6">
-                                    <label class="form-label" for="account_id">Sumber Dana</label><span style="color: red;">*</span>
-                                    <select id="bank_id" name="bank_id" class="select2 form-select"
-                                        aria-label="Default select example" required>
-                                        <option>-- Pilih Bank --</option>
-
-                                        @foreach($banks as $item)
-                                            <option @isset($data) @if($item->id == $data->bank_id) selected @endif @endisset value="{{ $item->id }}" >{{ $item->bank_name }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                         
-                                <div class="col-12 col-md-6">
-                                    <label for="select2Basic" class="form-label">Keterangan</label>
-                                    <textarea id="floatingInput" rows="4" class="form-control" name="note">@isset($data) {{ $data->note }} @endisset</textarea>
-                                </div>
-
-                        
                                 <div class="col-12" style="display: flex; justify-content: flex-end; margin-top: 5%;">
-                                    <a href="{{ route('backend.expense.index') }}"
+                                    <a href="{{ route('backend.deposit.index') }}"
                                         class="btn btn-label-secondary">
                                         Batal
                                     </a>

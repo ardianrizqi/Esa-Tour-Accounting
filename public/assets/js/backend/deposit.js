@@ -1,10 +1,10 @@
 $(function () {
-    var table = $('#expense-table'),
+    var table = $('#deposit-table'),
         dt_basic;
 
     if (table.length) {
         dt_basic = table.DataTable({
-            ajax: "expense/data",
+            ajax: "deposit/data",
             dataSrc: 'data',
             columns: [
                 {
@@ -16,9 +16,9 @@ $(function () {
                 },
                 { data: 'date' },
                 {
-                    data: 'category_expense',
+                    data: 'bank',
                     render: function (data, type, row) {
-                        return data['name'];
+                        return data['bank_name'];
                     }
                 },
                 { data: 'name' },
@@ -26,12 +26,6 @@ $(function () {
                     data: 'nominal',
                     render: function (data, type, row) {
                         return 'Rp.' + parseFloat(data).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
-                    }
-                },
-                {
-                    data: 'bank',
-                    render: function (data, type, row) {
-                        return data['bank_name'];
                     }
                 },
                 { data: null, defaultContent: '' }
@@ -48,16 +42,7 @@ $(function () {
                     searchable: false,
                     render: function (data, type, full, meta) {
                       return (
-                        // '<div class="d-inline-block">' +
-                        // '<a href="javascript:;" class="btn btn-sm btn-icon dropdown-toggle hide-arrow" data-bs-toggle="dropdown"><i class="text-primary ti ti-dots-vertical"></i></a>' +
-                        // '<ul class="dropdown-menu dropdown-menu-end m-0">' +
-                        //     '<li><a href="javascript:;" class="dropdown-item">Details</a></li>' +
-                        //     '<li><a href="javascript:;" class="dropdown-item">Archive</a></li>' +
-                        //     '<div class="dropdown-divider"></div>' +
-                        //     '<li><a href="javascript:;" class="dropdown-item text-danger delete-record">Delete</a></li>' +
-                        // '</ul>' +
-                        // '</div>' +
-                        '<a href="expense/edit/'+ full.id + '" class="btn btn-sm btn-icon item-edit"><i class="text-primary ti ti-pencil"></i></a>'+
+                        '<a href="deposit/edit/'+ full.id + '" class="btn btn-sm btn-icon item-edit"><i class="text-primary ti ti-pencil"></i></a>'+
                         '<a href="javascript:;" class="btn btn-sm btn-icon item-delete"><i class="text-primary ti ti-trash"></i></a>'
                       );
                     }
@@ -94,7 +79,7 @@ $(function () {
         });
 
         
-        $('#expense-table').on('click', '.item-delete', function () {
+        $('#deposit-table').on('click', '.item-delete', function () {
             var row = $(this).closest('tr');
             var data = dt_basic.row(row).data();
             // console.log(data.id);
