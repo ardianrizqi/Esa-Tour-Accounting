@@ -81,6 +81,16 @@ Route::middleware('auth')->group(function () {
             Route::get('/edit/{id}', 'AssetController@form')->name('asset.edit');
             Route::delete('/destroy/{id}', 'AssetController@destroy')->name('asset.destroy');
         });
+
+        Route::group(['prefix' => 'expense'], function () {
+            Route::get('/', 'ExpenseController@index')->name('expense.index');
+            Route::get('/data', 'ExpenseController@data')->name('expense.data');
+            Route::get('/create', 'ExpenseController@form')->name('expense.create');
+            Route::post('/store', 'ExpenseController@store')->name('expense.store');
+            Route::get('/edit/{id}', 'ExpenseController@form')->name('expense.edit');
+            Route::delete('/destroy/{id}', 'ExpenseController@destroy')->name('expense.destroy');
+            Route::post('/category-store', 'ExpenseController@category_store')->name('expense.category_store');
+        });
     });
 
 });
