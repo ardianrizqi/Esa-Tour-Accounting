@@ -100,6 +100,15 @@ Route::middleware('auth')->group(function () {
             Route::get('/edit/{id}', 'DepositController@form')->name('deposit.edit');
             Route::delete('/destroy/{id}', 'DepositController@destroy')->name('deposit.destroy');
         });
+
+        Route::group(['prefix' => 'tax'], function () {
+            Route::get('/', 'TaxController@index')->name('tax.index');
+            Route::get('/data', 'TaxController@data')->name('tax.data');
+            Route::get('/create', 'TaxController@form')->name('tax.create');
+            Route::post('/store', 'TaxController@store')->name('tax.store');
+            Route::get('/edit/{id}', 'TaxController@form')->name('tax.edit');
+            Route::delete('/destroy/{id}', 'TaxController@destroy')->name('tax.destroy');
+        });
     });
 
 });
