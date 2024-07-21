@@ -1,7 +1,7 @@
 <?php
 use App\Models\Bank;
 
-function calculate_income($data, $nominal, $is_deduction = false)
+function calculate_bank_income($data, $nominal, $is_deduction = false)
 {
     // dd('masok');
     if ($is_deduction) {
@@ -31,6 +31,24 @@ function calculate_receivables($data, $nominal, $is_increase = false)
     }else{
         $data->update([
             'receivables' => $data->receivables - $nominal,
+        ]);
+    }
+
+    return $data;
+}
+
+function calculate_bank_expense($data, $nominal, $is_increase = false)
+{
+    if ($is_increase) {
+        $data->update([
+            'expense'   => $data->expense + $nominal,
+            'balance'   => $data->balance - $nominal
+        ]);
+
+    }else{
+        $data->update([
+            'expense'   => $data->expense - $nominal,
+            'balance'   => $data->balance + $nominal
         ]);
     }
 

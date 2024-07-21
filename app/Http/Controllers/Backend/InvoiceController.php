@@ -15,6 +15,7 @@ use App\Models\Bank;
 use App\Models\BankHistory;
 use App\Models\Invoice;
 use App\Models\InvoiceDetail;
+use App\Models\Tax;
 use RealRashid\SweetAlert\Facades\Alert;
 use Illuminate\Support\Facades\Auth;
 
@@ -150,6 +151,9 @@ class InvoiceController extends Controller
                     'updated_user'      => Auth::user()->id
                 ];
 
+                if ($request->debt_to_vendors[$key] !== null) {
+                    $param_d['status_debt'] = 'Belum Lunas';
+                }
                 // dd($param_d);
 
                 $insert_d = InvoiceDetail::create($param_d);
@@ -191,8 +195,196 @@ class InvoiceController extends Controller
         $customer_payment = BankHistory::where('invoice_id', $data->id)
                             ->where('type', 'customer_payment')
                             ->get();
+
+        $refund = BankHistory::where('invoice_id', $data->id)
+                        ->where('type', 'refund')
+                        ->get();
+
+        $cashback = BankHistory::where('invoice_id', $data->id)
+            ->where('type', 'cashback')
+            ->get();
+
+        $tax = BankHistory::where('invoice_id', $data->id)
+                ->where('type', 'tax')
+                ->get();
+        
+        return view('backend.invoice.show', compact('title', 'action', 'provinces', 'customers', 
+        'products', 'physical_invoie', 'bank', 'data', 
+        'data_d', 'customer_payment', 'refund', 'cashback', 'tax'));
+    }
     
-        return view('backend.invoice.show', compact('title', 'action', 'provinces', 'customers', 'products', 'physical_invoie', 'bank', 'data', 'data_d', 'customer_payment'));
+    public function store_refund($id, $request)
+    {
+        $invoice = Invoice::find($id);
+
+        $check = BankHistory::where('invoice_id', $id)
+                ->where('type', 'refund')
+                ->get();
+
+        foreach ($check as $key => $value) {
+            $bank = Bank::find($value->bank_id);
+            calculate_bank_expense($bank, $value->nominal);
+            // calculate_receivables($invoice, $value->nominal, true);
+            
+            $value->delete();
+        }
+
+        if ($request->nominal_refund) {
+            foreach ($request->nominal_refund as $key => $value) {
+                if ($value !== null) {
+                    $bank = Bank::find($request->bank_id_refund[$key]);
+    
+                    if ($bank->balance < $value) {
+                        DB::rollBack();
+
+                        Alert::error('Error', 'Tidak Bisa Melakukan Refund Customer, Saldo Bank Tidak Mencukupi !!');
+                        return redirect()->back();
+                    }
+
+                    calculate_bank_expense($bank, $value, true);
+
+                    $note = '-';
+    
+                    if ($request->note_refund[$key] !== null) {
+                        $note = $request->note_refund[$key];
+                    }
+    
+                    $transaction_name = 'Refund Customer dari '.$invoice->invoice_number. ' Ket: '.$note;
+    
+                    $create = BankHistory::create([
+                        'bank_id'           => $request->bank_id_refund[$key],
+                        'transaction_name'  => $transaction_name,
+                        'invoice_id'        => $id,
+                        'date'              => $request->date_refund[$key],
+                        'product_id'        => $request->category_id_refund[$key],
+                        'type'              => 'refund',
+                        'nominal'           => $value,
+                        'note'              => $note,
+                        'created_user'      => Auth::user()->id,
+                        'updated_user'      => Auth::user()->id
+                    ]);
+
+                    // calculate_receivables($invoice, $value);
+                }
+            }
+        }
+    }
+
+    public function store_cashback($id, $request)
+    {
+        $invoice = Invoice::find($id);
+
+        $check = BankHistory::where('invoice_id', $id)
+                ->where('type', 'cashback')
+                ->get();
+
+        foreach ($check as $key => $value) {
+            $bank = Bank::find($value->bank_id);
+            calculate_bank_income($bank, $value->nominal, true);
+            
+            $value->delete();
+        }
+        // dd($bank);
+
+        if ($request->nominal_cashback) {
+            foreach ($request->nominal_cashback as $key => $value) {
+                if ($value !== null) {
+                    $bank = Bank::find($request->bank_id_cashback[$key]);
+                    // dd($bank);
+                    
+                    calculate_bank_income($bank, $value);
+
+                    $note = '-';
+    
+                    if ($request->note_cashback[$key] !== null) {
+                        $note = $request->note_cashback[$key];
+                    }
+    
+                    $transaction_name = 'Cashback Customer dari '.$invoice->invoice_number. ' Ket: '.$note;
+    
+                    $create = BankHistory::create([
+                        'bank_id'           => $request->bank_id_cashback[$key],
+                        'transaction_name'  => $transaction_name,
+                        'invoice_id'        => $id,
+                        'date'              => $request->date_cashback[$key],
+                        'product_id'        => $request->category_id_cashback[$key],
+                        'type'              => 'cashback',
+                        'nominal'           => $value,
+                        'note'              => $note,
+                        'created_user'      => Auth::user()->id,
+                        'updated_user'      => Auth::user()->id
+                    ]);
+
+                    // calculate_receivables($invoice, $value);
+                }
+            }
+        }
+    }
+
+    public function store_tax($id, $request)
+    {
+        $invoice = Invoice::find($id);
+
+        $check = BankHistory::where('invoice_id', $id)
+                ->where('type', 'tax')
+                ->get();
+
+        foreach ($check as $key => $value) {
+            $bank = Bank::find($value->bank_id);
+            calculate_bank_expense($bank, $value->nominal);
+            
+            $value->delete();
+        }
+        // dd($bank);
+
+        if ($request->nominal_tax) {
+            foreach ($request->nominal_tax as $key => $value) {
+                if ($value !== null) {
+                    $bank = Bank::find($request->bank_id_tax[$key]);
+                
+                    if ($bank->balance < $value) {
+                        DB::rollBack();
+
+                        Alert::error('Error', 'Tidak Bisa Melakukan Pajak & Biaya, Saldo Bank Tidak Mencukupi !!');
+                        return redirect()->back();
+                    }
+                    
+                    calculate_bank_expense($bank, $value, true);
+
+                    $note = '-';
+    
+                    if ($request->note_tax[$key] !== null) {
+                        $note = $request->note_tax[$key];
+                    }
+    
+                    // $transaction_name = 'Pajak & Biaya dari '.$invoice->invoice_number. ' Ket: '.$note;
+    
+                    $create = BankHistory::create([
+                        'bank_id'           => $request->bank_id_tax[$key],
+                        'transaction_name'  => $request->name_tax[$key],
+                        'invoice_id'        => $id,
+                        'date'              => $request->date_tax[$key],
+                        'type'              => 'tax',
+                        'nominal'           => $value,
+                        'note'              => $note,
+                        'created_user'      => Auth::user()->id,
+                        'updated_user'      => Auth::user()->id
+                    ]);
+
+
+                    # create tax
+                    $insert = Tax::create([
+                        'date'          => $request->date_tax[$key],
+                        'invoice_id'    => $id,
+                        'name'          => $request->name_tax[$key],
+                        'nominal'       => $value,
+                        'created_user'  => Auth::user()->id,
+                        'updated_user'  => Auth::user()->id
+                    ]);
+                    // calculate_receivables($invoice, $value);
+                }
+            }
+        }
     }
 
     public function update_details($id, Request $request)
@@ -208,43 +400,108 @@ class InvoiceController extends Controller
 
             foreach ($check as $key => $value) {
                 $bank = Bank::find($value->bank_id);
-                calculate_income($bank, $value->nominal, true);
+                calculate_bank_income($bank, $value->nominal, true);
                 calculate_receivables($invoice, $value->nominal, true);
                 
                 $value->delete();
             }
 
+            // dd('masok');
+            # pembayaran customer
             if ($request->nominal) {
                 foreach ($request->nominal as $key => $value) {
-                    $bank = Bank::find($request->bank_id[$key]);
-                    calculate_income($bank, $value);
-
-                    $note = '-';
+                    if ($value !== null) {
+                        $bank = Bank::find($request->bank_id[$key]);
+                        calculate_bank_income($bank, $value);
     
-                    if ($request->note[$key] !== null) {
-                        $note = $request->note[$key];
+                        $note = '-';
+        
+                        if ($request->note[$key] !== null) {
+                            $note = $request->note[$key];
+                        }
+        
+                        $transaction_name = 'Pembayaran Customer dari '.$invoice->invoice_number. ' Ket: '.$note;
+        
+                        $create = BankHistory::create([
+                            'bank_id'           => $request->bank_id[$key],
+                            'transaction_name'  => $transaction_name,
+                            'invoice_id'        => $id,
+                            'date'              => $request->date[$key],
+                            'type'              => 'customer_payment',
+                            'nominal'           => $value,
+                            'note'              => $note,
+                            'created_user'      => Auth::user()->id,
+                            'updated_user'      => Auth::user()->id
+                        ]);
+    
+                        calculate_receivables($invoice, $value);
                     }
-    
-                    $transaction_name = 'Pembayaran Customer dari '.$invoice->invoice_number. ' Ket: '.$note;
-    
-                    $create = BankHistory::create([
-                        'bank_id'           => $request->bank_id[$key],
-                        'transaction_name'  => $transaction_name,
-                        'invoice_id'        => $id,
-                        'date'              => $request->date[$key],
-                        'type'              => 'customer_payment',
-                        'nominal'           => $value,
-                        'note'              => $note,
-                        'created_user'      => Auth::user()->id,
-                        'updated_user'      => Auth::user()->id
-                    ]);
-
-                    calculate_receivables($invoice, $value);
                 }
             }
 
-        
+            # hutang vendor
+            // dd($request);
+            foreach ($request->inv_debt_id as $key => $value) {
+                $invoice_d = InvoiceDetail::find($value);
+                $status_payment = true;
+
+                if ($invoice_d->status_debt !== 'Sudah Lunas') {
+                    if ($request->payment_date[$key] !== null) {
+                        $bank = Bank::find($invoice_d->from_bank);
+    
+                        if ($bank->balance < $invoice_d->debt_to_vendors) {
+                            // dd('masok');
+                            DB::rollBack();
+    
+                            Alert::error('Error', 'Tidak Bisa Melakukan Pelunasan Hutang Vendor, Saldo Bank Tidak Mencukupi !!');
+                            return redirect()->back();
+                        }
+    
+    
+                        calculate_bank_expense($bank, $invoice_d->debt_to_vendors, true);
+    
+                        $invoice_d->update([
+                            'status_debt'       => 'Sudah Lunas',
+                            'date_payment_debt' => $request->payment_date[$key]
+                        ]);
+    
+                        $transaction_name = 'Pelunasan Hutang Ke Vendor dari '.$invoice->invoice_number;
+    
+                        $create = BankHistory::create([
+                            'bank_id'           => $invoice_d->from_bank,
+                            'transaction_name'  => $transaction_name,
+                            'invoice_id'        => $invoice_d->invoice_id,
+                            'date'              => $request->payment_date[$key],
+                            'type'              => 'vendor_payment',
+                            'nominal'           => $invoice_d->debt_to_vendors,
+                            'note'              => '-',
+                            'created_user'      => Auth::user()->id,
+                            'updated_user'      => Auth::user()->id
+                        ]);
+                    }
+                }
+            
+
+                // if ($invoice_d->status_debt == 'Belum Lunas') {
+                //     $status_payment = false;
+                // }
+            }
            
+            // if ($status_payment) {
+            //     $invoice->update([
+            //         'status'    => 'Sudah Lunas'
+            //     ]);
+            // }
+
+            # refund
+            $this->store_refund($id, $request);
+
+            # cashback
+            $this->store_cashback($id, $request);
+
+            # tax
+            $this->store_tax($id, $request);
+
             DB::commit();
 
             Alert::success('Sukses', 'Berhasil Menyimpan Data');

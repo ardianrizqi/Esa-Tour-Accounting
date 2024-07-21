@@ -215,8 +215,357 @@
 
                 <div class="col-md-12">
                     <div class="card mb-4">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="card-title m-0">Hutang Ke Vendor</h5>
+                        </div>
+
                         <div class="card-body">
-                        
+                            <div>
+                                <div class="row debt-row" style="margin-top: 10%;">
+                                    <div class="table-responsive text-nowrap" style="margin-top: 5%;">
+                                        <table class="table">
+                                            <thead>
+                                                <tr>
+                                                    <th>No</th>
+                                                    <th>Kategori Item</th>
+                                                    <th>Produk</th>
+                                                    <th>Nominal</th>
+                                                    <th>Status Hutang</th>
+                                                    <th>Tanggal Pelunasan</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="table-border-bottom-0">
+                                                @foreach ($data_d as $key => $item)
+                                                    @if ($item->debt_to_vendors !== null)
+                                                        <tr>
+                                                            <td>{{ $loop->iteration }}</td>
+                                                            <td>{{ $item->category->product_category }}</td>
+                                                            <td>{{ $item->product_name }}</td>
+                                                            <td>Rp. {{ number_format($item->debt_to_vendors) }}</td>
+                                                            <td>
+                                                                @if($item->status_debt == 'Belum Lunas')
+                                                                    <label class="btn btn-sm btn-danger">Belum Lunas</label>
+                                                                @else 
+                                                                    <label class="btn btn-sm btn-success">Sudah Lunas</label>
+                                                                @endif 
+                                                            </td>
+                                                            <td>
+                                                                <input type="hidden" class="form-control" id="inv_debt_id" name="inv_debt_id[]" value="{{ $item->id }}"/>
+                                                                <input type="date" class="form-control" id="date" name="payment_date[]" value="{{ $item->date_payment_debt }}"/>
+                                                            </td>
+                                                        </tr>
+                                                    @endif
+                                                @endforeach
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div> 
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-12">
+                    <div class="card mb-4">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="card-title m-0">Refund Customer</h5>
+                        </div>
+
+                        <div class="card-body">
+                            <button id="add_refund" style="float:right; margin-bottom: 5%;" type="button" class="btn btn-warning">
+                                <i class="ti ti-plus me-sm-1"></i>
+                            </button>
+
+
+                            <div id="rowsContainerRefund">
+                                @if (count($refund) > 0)
+                                    @foreach ($refund as $key => $item)
+                                        <div class="row refund-row" style="margin-top: 10%;">
+                                            <div class="col-md-2 mb-4">
+                                                <label for="select2Basic" class="form-label">Nominal</label>
+                                                <div class="input-group">
+                                                    <span class="input-group-text" id="basic-addon11">Rp.</span>
+                                                    <input id="nominal_refund" type="text" class="form-control nominal" placeholder="" aria-label="" aria-describedby="basic-addon11"  name="nominal_refund[]" value="{{ $item->nominal }}"/>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-2 mb-4">
+                                                <label for="select2Basic" class="form-label">Tanggal</label>
+                                                <input type="date" class="form-control" id="date_refund" name="date_refund[]" value="{{ $item->date }}"/>
+                                            </div>
+
+                                            <div class="col-md-2 mb-4">
+                                                <label @if($key == 0) for="category_id_refund" @else for="category_id_refund_"{{ $key }} @endif class="form-label">Kategori Item</label><span style="color: red;">*</span>
+                                                <select @if($key == 0) id="category_id_refund" @else id="category_id_refund_"{{ $key }} @endif class="select2 form-select form-select-lg" data-allow-clear="true" name="category_id_refund[]" required>
+                                                    <option>-- Pilih Kategori --</option>
+            
+                                                    @foreach ($products as $product)
+                                                        <option @if($item->product_id == $product->id) selected @endif value="{{ $product->id }}">{{ $product->product_category }}</option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+
+                                            <div class="col-md-3 mb-4">
+                                                <label for="select2Basic" class="form-label">Keterangan</label>
+                                                <textarea id="note_refund" rows="1" class="form-control" name="note_refund[]">{{ $item->note }}</textarea>
+                                            </div>
+
+                                            <div class="col-md-2 mb-4">
+                                                <label @if($key == 0) for="bank_id_refund" @else for="bank_id_refund_"{{ $key }} @endif class="form-label">Dari Bank</label>
+                                                <select @if($key == 0) id="bank_id_refund" @else id="bank_id_refund_"{{ $key }} @endif class="select2 form-select form-select-lg" data-allow-clear="true" name="bank_id_refund[]">
+                                                    <option>-- Pilih Bank --</option>
+            
+                                                    @foreach ($bank as $item2)                                           
+                                                        <option @if($item->bank_id == $item2->id) selected @endif value="{{ $item2->id }}">{{ $item2->bank_name }}</option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                        </div> 
+                                    @endforeach
+                                @else 
+                                    <div class="row refund-row" style="margin-top: 10%;">
+                                        <div class="col-md-2 mb-4">
+                                            <label for="select2Basic" class="form-label">Nominal</label>
+                                            <div class="input-group">
+                                                <span class="input-group-text" id="basic-addon11">Rp.</span>
+                                                <input id="nominal_refund" type="text" class="form-control nominal" placeholder="" aria-label="" aria-describedby="basic-addon11"  name="nominal_refund[]"/>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-2 mb-4">
+                                            <label for="select2Basic" class="form-label">Tanggal</label>
+                                            <input type="date" class="form-control" id="date_refund" name="date_refund[]"/>
+                                        </div>
+
+                                        <div class="col-md-2 mb-4">
+                                            <label for="category_id_refund" class="form-label">Kategori Item</label><span style="color: red;">*</span>
+                                            <select id="category_id_refund" class="select2 form-select form-select-lg" data-allow-clear="true" name="category_id_refund[]" required>
+                                                <option>-- Pilih Kategori --</option>
+        
+                                                @foreach ($products as $item)
+                                                    <option value="{{ $item->id }}">{{ $item->product_category }}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+
+                                        <div class="col-md-3 mb-4">
+                                            <label for="select2Basic" class="form-label">Keterangan</label>
+                                            <textarea id="note_refund" rows="1" class="form-control" name="note_refund[]"></textarea>
+                                        </div>
+
+                                        <div class="col-md-2 mb-4">
+                                            <label for="bank_id_refund" class="form-label">Dari Bank</label>
+                                            <select id="bank_id_refund" class="select2 form-select form-select-lg" data-allow-clear="true" name="bank_id_refund[]">
+                                                <option>-- Pilih Bank --</option>
+        
+                                                @foreach ($bank as $item)                                           
+                                                    <option value="{{ $item->id }}">{{ $item->bank_name }}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                    </div> 
+                                @endif
+                              
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-12">
+                    <div class="card mb-4">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="card-title m-0">Cashback</h5>
+                        </div>
+
+                        <div class="card-body">
+                            <button id="add_cashback" style="float:right; margin-bottom: 5%;" type="button" class="btn btn-warning">
+                                <i class="ti ti-plus me-sm-1"></i>
+                            </button>
+
+
+                            <div id="rowsContainerCashback">
+                                @if (count($cashback) > 0)
+                                    @foreach ($cashback as $key => $item)
+                                        <div class="row cashback-row" style="margin-top: 10%;">
+                                            <div class="col-md-2 mb-4">
+                                                <label for="select2Basic" class="form-label">Nominal</label>
+                                                <div class="input-group">
+                                                    <span class="input-group-text" id="basic-addon11">Rp.</span>
+                                                    <input id="nominal_cashback" type="text" class="form-control nominal" placeholder="" aria-label="" aria-describedby="basic-addon11"  name="nominal_cashback[]" value="{{ $item->nominal }}"/>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-2 mb-4">
+                                                <label for="select2Basic" class="form-label">Tanggal</label>
+                                                <input type="date" class="form-control" id="date_cashback" name="date_cashback[]" value="{{ $item->date }}"/>
+                                            </div>
+
+                                            <div class="col-md-2 mb-4">
+                                                <label @if($key == 0) for="category_id_cashback" @else for="category_id_cashback_"{{ $key }} @endif class="form-label">Kategori Item</label><span style="color: red;">*</span>
+                                                <select @if($key == 0) id="category_id_cashback" @else id="category_id_cashback_"{{ $key }} @endif class="select2 form-select form-select-lg" data-allow-clear="true" name="category_id_cashback[]" required>
+                                                    <option>-- Pilih Kategori --</option>
+            
+                                                    @foreach ($products as $product)
+                                                        <option @if($item->product_id == $product->id) selected @endif value="{{ $product->id }}">{{ $product->product_category }}</option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+
+                                            <div class="col-md-3 mb-4">
+                                                <label for="select2Basic" class="form-label">Keterangan</label>
+                                                <textarea id="note_cashback" rows="1" class="form-control" name="note_cashback[]">{{ $item->note }}</textarea>
+                                            </div>
+
+                                            <div class="col-md-2 mb-4">
+                                                <label @if($key == 0) for="bank_id_cashback" @else for="bank_id_cashback_"{{ $key }} @endif class="form-label">Dari Bank</label>
+                                                <select @if($key == 0) id="bank_id_cashback" @else id="bank_id_cashback_"{{ $key }} @endif class="select2 form-select form-select-lg" data-allow-clear="true" name="bank_id_cashback[]">
+                                                    <option>-- Pilih Bank --</option>
+            
+                                                    @foreach ($bank as $item2)                                           
+                                                        <option @if($item->bank_id == $item2->id) selected @endif value="{{ $item2->id }}">{{ $item2->bank_name }}</option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                        </div> 
+                                    @endforeach
+                                @else 
+                                    <div class="row cashback-row" style="margin-top: 10%;">
+                                        <div class="col-md-2 mb-4">
+                                            <label for="select2Basic" class="form-label">Nominal</label>
+                                            <div class="input-group">
+                                                <span class="input-group-text" id="basic-addon11">Rp.</span>
+                                                <input id="nominal_cashback" type="text" class="form-control nominal" placeholder="" aria-label="" aria-describedby="basic-addon11"  name="nominal_cashback[]"/>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-2 mb-4">
+                                            <label for="select2Basic" class="form-label">Tanggal</label>
+                                            <input type="date" class="form-control" id="date_cashback" name="date_cashback[]"/>
+                                        </div>
+
+                                        <div class="col-md-2 mb-4">
+                                            <label for="category_id_cashback" class="form-label">Kategori Item</label><span style="color: red;">*</span>
+                                            <select id="category_id_cashback" class="select2 form-select form-select-lg" data-allow-clear="true" name="category_id_cashback[]" required>
+                                                <option>-- Pilih Kategori --</option>
+        
+                                                @foreach ($products as $item)
+                                                    <option value="{{ $item->id }}">{{ $item->product_category }}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+
+                                        <div class="col-md-3 mb-4">
+                                            <label for="select2Basic" class="form-label">Keterangan</label>
+                                            <textarea id="note_cashback" rows="1" class="form-control" name="note_cashback[]"></textarea>
+                                        </div>
+
+                                        <div class="col-md-2 mb-4">
+                                            <label for="bank_id_cashback" class="form-label">Dari Bank</label>
+                                            <select id="bank_id_cashback" class="select2 form-select form-select-lg" data-allow-clear="true" name="bank_id_cashback[]">
+                                                <option>-- Pilih Bank --</option>
+        
+                                                @foreach ($bank as $item)                                           
+                                                    <option value="{{ $item->id }}">{{ $item->bank_name }}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                    </div> 
+                                @endif
+                              
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-12">
+                    <div class="card mb-4">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="card-title m-0">Pajak & Biaya</h5>
+                        </div>
+
+                        <div class="card-body">
+                            <button id="add_tax" style="float:right; margin-bottom: 5%;" type="button" class="btn btn-warning">
+                                <i class="ti ti-plus me-sm-1"></i>
+                            </button>
+
+
+                            <div id="rowsContainerTax">
+                                @if (count($tax) > 0)
+                                    @foreach ($tax as $key => $item)
+                                        <div class="row tax-row" style="margin-top: 10%;">
+                                            <div class="col-md-2 mb-4">
+                                                <label for="select2Basic" class="form-label">Nominal</label>
+                                                <div class="input-group">
+                                                    <span class="input-group-text" id="basic-addon11">Rp.</span>
+                                                    <input id="nominal_tax" type="text" class="form-control nominal" placeholder="" aria-label="" aria-describedby="basic-addon11"  name="nominal_tax[]" value="{{ $item->nominal }}"/>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-2 mb-4">
+                                                <label for="select2Basic" class="form-label">Tanggal</label>
+                                                <input type="date" class="form-control" id="date_cashback" name="date_tax[]" value="{{ $item->date }}"/>
+                                            </div>
+
+                                            <div class="col-md-2 mb-4">
+                                                <label for="select2Basic" class="form-label">Nama Transaksi</label>
+                                                <input type="text" class="form-control" id="name_tax" name="name_tax[]" value="{{ $item->transaction_name }}"/>
+                                            </div>
+
+                                            <div class="col-md-3 mb-4">
+                                                <label for="select2Basic" class="form-label">Keterangan</label>
+                                                <textarea id="note_tax" rows="1" class="form-control" name="note_tax[]">{{ $item->note }}</textarea>
+                                            </div>
+
+                                            <div class="col-md-2 mb-4">
+                                                <label @if($key == 0) for="bank_id_tax" @else for="bank_id_tax_"{{ $key }} @endif class="form-label">Dari Bank</label>
+                                                <select @if($key == 0) id="bank_id_tax" @else id="bank_id_tax_"{{ $key }} @endif class="select2 form-select form-select-lg" data-allow-clear="true" name="bank_id_tax[]">
+                                                    <option>-- Pilih Bank --</option>
+            
+                                                    @foreach ($bank as $item2)                                           
+                                                        <option @if($item->bank_id == $item2->id) selected @endif value="{{ $item2->id }}">{{ $item2->bank_name }}</option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                        </div> 
+                                    @endforeach
+                                @else 
+                                    <div class="row tax-row" style="margin-top: 10%;">
+                                        <div class="col-md-2 mb-4">
+                                            <label for="select2Basic" class="form-label">Nominal</label>
+                                            <div class="input-group">
+                                                <span class="input-group-text" id="basic-addon11">Rp.</span>
+                                                <input id="nominal_tax" type="text" class="form-control nominal" placeholder="" aria-label="" aria-describedby="basic-addon11"  name="nominal_tax[]"/>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-2 mb-4">
+                                            <label for="select2Basic" class="form-label">Tanggal</label>
+                                            <input type="date" class="form-control" id="date_tax" name="date_tax[]"/>
+                                        </div>
+
+                                        <div class="col-md-2 mb-4">
+                                            <label for="select2Basic" class="form-label">Nama Transaksi</label>
+                                            <input type="text" class="form-control" id="name_tax" name="name_tax[]"/>
+                                        </div>
+
+                                        <div class="col-md-3 mb-4">
+                                            <label for="select2Basic" class="form-label">Keterangan</label>
+                                            <textarea id="note_tax" rows="1" class="form-control" name="note_tax[]"></textarea>
+                                        </div>
+
+                                        <div class="col-md-2 mb-4">
+                                            <label for="bank_id_tax" class="form-label">Dari Bank</label>
+                                            <select id="bank_id_tax" class="select2 form-select form-select-lg" data-allow-clear="true" name="bank_id_tax[]">
+                                                <option>-- Pilih Bank --</option>
+        
+                                                @foreach ($bank as $item)                                           
+                                                    <option value="{{ $item->id }}">{{ $item->bank_name }}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                    </div> 
+                                @endif
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -311,6 +660,135 @@
         $(document).on('click', '.removeRowBtn', function() {
             $(this).closest('.piutang-row').remove();
             update_piutang();
+        });
+
+        initializeSelect2('#bank_id_refund');
+        initializeSelect2('#category_id_refund');
+
+        $('#add_refund').click(function() {
+            var clonedRow = $('.refund-row:first').clone();
+            clonedRow.find('input, textarea').val('');
+
+       
+            clonedRow.find('.select2-container').remove();
+
+
+            let param_id = [];
+
+            clonedRow.find('select').each(function() {
+                var newId = $(this).attr('id') + '_' + $('.refund-row').length;
+                // console.log(newId);
+                $(this).attr('id', newId);
+                $(this).addClass('select2');
+                param_id.push(newId);
+            });
+
+
+            $('#rowsContainerRefund').append(clonedRow);
+
+            initializeSelect2('#' + clonedRow.find('#bank_id_refund').attr('id'));
+            initializeSelect2('#' + clonedRow.find('#category_id_refund').attr('id'));
+
+            param_id.forEach(element => {
+                initializeSelect2('#' + clonedRow.find('#'+element).attr('id'));
+            });
+
+
+            clonedRow.append('<div class="col-md-12 mb-4" style="display: flex; justify-content: flex-end;"><button type="button" class="btn btn-danger removeRowBtnRefund"><i class="ti ti-trash me-sm-1"></i></button></div>');
+
+            clonedRow.find('.removeRowBtnRefund').click(function() {
+                $(this).closest('.refund-row').remove();
+            });
+        });
+
+        $(document).on('click', '.removeRowBtnRefund', function() {
+            $(this).closest('.refund-row').remove();
+        });
+
+        initializeSelect2('#bank_id_cashback');
+        initializeSelect2('#category_id_cashback');
+
+        $('#add_cashback').click(function() {
+            var clonedRow = $('.cashback-row:first').clone();
+            clonedRow.find('input, textarea').val('');
+
+       
+            clonedRow.find('.select2-container').remove();
+
+
+            let param_id = [];
+
+            clonedRow.find('select').each(function() {
+                var newId = $(this).attr('id') + '_' + $('.cashback-row').length;
+                // console.log(newId);
+                $(this).attr('id', newId);
+                $(this).addClass('select2');
+                param_id.push(newId);
+            });
+
+
+            $('#rowsContainerCashback').append(clonedRow);
+
+            initializeSelect2('#' + clonedRow.find('#bank_id_cashback').attr('id'));
+            initializeSelect2('#' + clonedRow.find('#category_id_cashback').attr('id'));
+
+            param_id.forEach(element => {
+                initializeSelect2('#' + clonedRow.find('#'+element).attr('id'));
+            });
+
+
+            clonedRow.append('<div class="col-md-12 mb-4" style="display: flex; justify-content: flex-end;"><button type="button" class="btn btn-danger removeRowBtnCashback"><i class="ti ti-trash me-sm-1"></i></button></div>');
+
+            clonedRow.find('.removeRowBtnCashback').click(function() {
+                $(this).closest('.cashback-row').remove();
+            });
+        });
+
+        $(document).on('click', '.removeRowBtnCashback', function() {
+            $(this).closest('.cashback-row').remove();
+        });
+
+        initializeSelect2('#bank_id_tax');
+        initializeSelect2('#category_id_tax');
+
+        $('#add_tax').click(function() {
+            var clonedRow = $('.tax-row:first').clone();
+            clonedRow.find('input, textarea').val('');
+
+       
+            clonedRow.find('.select2-container').remove();
+
+
+            let param_id = [];
+
+            clonedRow.find('select').each(function() {
+                var newId = $(this).attr('id') + '_' + $('.tax-row').length;
+                // console.log(newId);
+                $(this).attr('id', newId);
+                $(this).addClass('select2');
+                param_id.push(newId);
+            });
+
+
+            $('#rowsContainerTax').append(clonedRow);
+
+            initializeSelect2('#' + clonedRow.find('#bank_id_tax').attr('id'));
+            initializeSelect2('#' + clonedRow.find('#category_id_tax').attr('id'));
+
+            param_id.forEach(element => {
+                initializeSelect2('#' + clonedRow.find('#'+element).attr('id'));
+            });
+
+
+            clonedRow.append('<div class="col-md-12 mb-4" style="display: flex; justify-content: flex-end;"><button type="button" class="btn btn-danger removeRowBtnTax"><i class="ti ti-trash me-sm-1"></i></button></div>');
+
+            clonedRow.find('.removeRowBtnTax').click(function() {
+                $(this).closest('.tax-row').remove();
+            });
+        });
+
+        $(document).on('click', '.removeRowBtnTax', function() {
+            $(this).closest('.tax-row').remove();
         });
     </script>
 @endpush

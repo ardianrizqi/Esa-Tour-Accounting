@@ -17,7 +17,7 @@ class BankController extends Controller
 
     public function __construct()
     {
-        $this->title = 'Deposit';
+        $this->title = 'Bank';
     }
 
     public function index()
