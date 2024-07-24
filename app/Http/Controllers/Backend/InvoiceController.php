@@ -157,6 +157,11 @@ class InvoiceController extends Controller
                 // dd($param_d);
 
                 $insert_d = InvoiceDetail::create($param_d);
+
+                $product = Product::find($value);
+                calculate_sell_product($product, $request->selling_price[$key]);
+                calculate_purchase_product($product, $request->selling_price[$key]);
+                calculate_profit_product($product);
             }
 
             // dd('masok');

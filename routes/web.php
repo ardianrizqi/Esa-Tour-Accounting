@@ -109,6 +109,10 @@ Route::middleware('auth')->group(function () {
             Route::get('/edit/{id}', 'TaxController@form')->name('tax.edit');
             Route::delete('/destroy/{id}', 'TaxController@destroy')->name('tax.destroy');
         });
+
+        Route::group(['prefix' => 'scale'], function () {
+            Route::get('/', 'ScaleController@index')->name('scale.index');
+        });
     });
 
 });

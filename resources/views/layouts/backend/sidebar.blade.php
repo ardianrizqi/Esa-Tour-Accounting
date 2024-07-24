@@ -107,10 +107,30 @@
                         d="M3 6v5.172a2 2 0 0 0 .586 1.414l7.71 7.71a2.41 2.41 0 0 0 3.408 0l5.592 -5.592a2.41 2.41 0 0 0 0 -3.408l-7.71 -7.71a2 2 0 0 0 -1.414 -.586h-5.172a3 3 0 0 0 -3 3z" />
                     <path
                         d="M12.5 13.847l-1.5 1.153l.532 -1.857l-1.532 -1.143h1.902l.598 -1.8l.598 1.8h1.902l-1.532 1.143l.532 1.857z" />
-                    </svg>
+                </svg>
                 <div data-i18n="Pajak" style="margin-left:3%;">Pajak</div>
             </a>
         </li>
+
+        <li class="menu-header small text-uppercase">
+            <span class="menu-header-text" data-i18n="Laporan">Laporan</span>
+        </li>
+
+        <li class="menu-item @yield('scale')">
+            <a href="{{ route('backend.scale.index') }}" class="menu-link">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    class="icon icon-tabler icons-tabler-outline icon-tabler-scale">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                    <path d="M7 20l10 0" />
+                    <path d="M6 6l6 -1l6 1" />
+                    <path d="M12 3l0 17" />
+                    <path d="M9 12l-3 -6l-3 6a3 3 0 0 0 6 0" />
+                    <path d="M21 12l-3 -6l-3 6a3 3 0 0 0 6 0" /></svg>
+                <div data-i18n="Neraca" style="margin-left:3%;">Neraca</div>
+            </a>
+        </li>
+
 
         <!-- Apps & Pages -->
         <li class="menu-header small text-uppercase">
