@@ -80,7 +80,12 @@ class InvoiceController extends Controller
         DB::beginTransaction();
 
         try {
-            $data = Customer::create($request->all());
+            $requestData = array_merge($request->all(), [
+                'created_user'  => Auth::user()->id,
+                'updated_user'  => Auth::user()->id,
+            ]);
+
+            $data = Customer::create($requestData);
 
             DB::commit();
 
@@ -92,6 +97,7 @@ class InvoiceController extends Controller
                 'data'      => $data,
             ]);
         } catch (\Throwable $th) {
+            dd($th->getMessage());
             DB::rollBack();
 
             return response()->json([
