@@ -21,11 +21,13 @@ use Illuminate\Support\Facades\Auth;
 
 class InvoiceController extends Controller
 {
-    public $title;
+    public $title, $messege, $error;
 
     public function __construct()
     {
         $this->title = 'Invoice';
+        $this->messege = '';
+        $this->error = false;
     }
 
     public function index()
@@ -52,13 +54,16 @@ class InvoiceController extends Controller
         $products           = Product::all();
         $physical_invoie    = PhysicalInvoice::all();
         $bank               = Bank::all();
+        $tax = [];
+        $cashback = [];
+        $refund = [];
 
         if ($id) {
             $data   = Invoice::find($id);
             $data_d = InvoiceDetail::where('invoice_id', $data->id)->get();
         }
                 
-        return view('backend.invoice.form', compact('title', 'action', 'provinces', 'customers', 'products', 'physical_invoie', 'bank', 'data', 'data_d'));
+        return view('backend.invoice.form', compact('title', 'action', 'provinces', 'customers', 'products', 'physical_invoie', 'bank', 'data', 'data_d', 'tax', 'cashback', 'refund'));
     }
 
     public function get_city($province_id)
@@ -135,12 +140,138 @@ class InvoiceController extends Controller
 
                 $find_d = InvoiceDetail::where('invoice_id', $find->id)->delete();
             }else{
+                // dd('masok');
                 $insert_h = Invoice::create($param_h);
+            }
+
+            // dd('keluar');
+            $id = $insert_h->id;
+
+            $invoice = Invoice::find($id);
+            $check = BankHistory::where('invoice_id', $id)
+                    ->where('type', 'customer_payment')
+                    ->get();
+
+            // dd($check);
+            foreach ($check as $key => $value) {
+                $bank = Bank::find($value->bank_id);
+                calculate_bank_income($bank, $value->nominal, true);
+                calculate_receivables($invoice, $value->nominal, true);
+                
+                $value->delete();
+            }
+
+            // dd('masok');
+            // dd($request);
+            # pembayaran customer
+            if ($request->nominal) {
+                foreach ($request->nominal as $key => $value) {
+                    if ($value !== null) {
+                        $bank = Bank::find($request->bank_id[$key]);
+                        calculate_bank_income($bank, $value);
+    
+                        $note = '-';
+        
+                        if ($request->note[$key] !== null) {
+                            $note = $request->note[$key];
+                        }
+        
+                        $transaction_name = 'Pembayaran Customer dari '.$invoice->invoice_number. ' Ket: '.$note;
+        
+                        $create = BankHistory::create([
+                            'bank_id'           => $request->bank_id[$key],
+                            'transaction_name'  => $transaction_name,
+                            'invoice_id'        => $id,
+                            'date'              => $request->date[$key],
+                            'type'              => 'customer_payment',
+                            'nominal'           => $value,
+                            'note'              => $note,
+                            'created_user'      => Auth::user()->id,
+                            'updated_user'      => Auth::user()->id
+                        ]);
+    
+                        calculate_receivables($invoice, $value);
+                    }
+                }
+            }
+
+            # hutang vendor
+            if ($request->inv_debt_id) {
+                foreach ($request->inv_debt_id as $key => $value) {
+                    $invoice_d = InvoiceDetail::find($value);
+                    $status_payment = true;
+    
+                    if ($invoice_d->status_debt !== 'Sudah Lunas') {
+                        if ($request->payment_date[$key] !== null) {
+                            $bank = Bank::find($invoice_d->from_bank);
+        
+                            if ($bank->balance < $invoice_d->debt_to_vendors) {
+                                // dd('masok');
+                                DB::rollBack();
+        
+                                Alert::error('Error', 'Tidak Bisa Melakukan Pelunasan Hutang Vendor, Saldo Bank Tidak Mencukupi !!');
+                                return redirect()->back();
+                            }
+        
+        
+                            calculate_bank_expense($bank, $invoice_d->debt_to_vendors, true);
+        
+                            $invoice_d->update([
+                                'status_debt'       => 'Sudah Lunas',
+                                'date_payment_debt' => $request->payment_date[$key]
+                            ]);
+        
+                            $transaction_name = 'Pelunasan Hutang Ke Vendor dari '.$invoice->invoice_number;
+        
+                            $create = BankHistory::create([
+                                'bank_id'           => $invoice_d->from_bank,
+                                'transaction_name'  => $transaction_name,
+                                'invoice_id'        => $invoice_d->invoice_id,
+                                'date'              => $request->payment_date[$key],
+                                'type'              => 'vendor_payment',
+                                'nominal'           => $invoice_d->debt_to_vendors,
+                                'note'              => '-',
+                                'created_user'      => Auth::user()->id,
+                                'updated_user'      => Auth::user()->id
+                            ]);
+                        }
+                    }
+                
+    
+                    // if ($invoice_d->status_debt == 'Belum Lunas') {
+                    //     $status_payment = false;
+                    // }
+                }
+            }
+            // dd($request);
+         
+           
+            // if ($status_payment) {
+            //     $invoice->update([
+            //         'status'    => 'Sudah Lunas'
+            //     ]);
+            // }
+
+            # refund
+            $this->store_refund($id, $request);
+
+            // dd('mask');
+            # cashback
+            $this->store_cashback($id, $request);
+            # tax
+            $this->store_tax($id, $request);
+            // dd('maosk');
+
+            if ($this->error) {
+                Alert::error('Error', $this->messege);
+
+                DB::rollBack();
+                return redirect()->back();
             }
 
             // dd($request->category_id);
             foreach ($request->category_id as $key => $value) {
-                // dd($request);
+                // dd($insert_h);
 
                 $param_d = [
                     'invoice_id'        => $insert_h->id,
@@ -157,11 +288,14 @@ class InvoiceController extends Controller
                     'updated_user'      => Auth::user()->id
                 ];
 
+                // dd($param_d);
+
                 if ($request->debt_to_vendors[$key] !== null) {
                     $param_d['status_debt'] = 'Belum Lunas';
                 }
                 // dd($param_d);
 
+                // dd('masok');
                 $insert_d = InvoiceDetail::create($param_d);
 
                 $product = Product::find($value);
@@ -176,7 +310,7 @@ class InvoiceController extends Controller
             Alert::success('Sukses', 'Berhasil Menyimpan Data');
             return redirect()->route('backend.invoice.index');
         } catch (\Throwable $th) {
-            // dd($th->getMessage());
+            dd($th->getMessage());
             DB::rollBack();
 
             Alert::error('Gagal', 'Terjadi Kesalahan Pada Server, Coba Lagi Kembali');
@@ -241,17 +375,26 @@ class InvoiceController extends Controller
         }
 
         if ($request->nominal_refund) {
+            // dd('masok');
             foreach ($request->nominal_refund as $key => $value) {
                 if ($value !== null) {
                     $bank = Bank::find($request->bank_id_refund[$key]);
+                    // dd($request);
     
-                    if ($bank->balance < $value) {
-                        DB::rollBack();
+                    if ($bank) {
+                        if ($bank->balance < $value) {
+                            // dd('masok');
+                            // DB::rollBack();
+                            $this->error = true;
+                            $this->messege = 'Tidak Bisa Melakukan Refund Customer, Saldo Bank Tidak Mencukupi !!';
 
-                        Alert::error('Error', 'Tidak Bisa Melakukan Refund Customer, Saldo Bank Tidak Mencukupi !!');
-                        return redirect()->back();
+                            // Alert::error('Error', 'Tidak Bisa Melakukan Refund Customer, Saldo Bank Tidak Mencukupi !!');
+                            // return redirect()->back();
+                        }
+
                     }
-
+                   
+                    // dd('masok');
                     calculate_bank_expense($bank, $value, true);
 
                     $note = '-';
@@ -262,6 +405,7 @@ class InvoiceController extends Controller
     
                     $transaction_name = 'Refund Customer dari '.$invoice->invoice_number. ' Ket: '.$note;
     
+          
                     $create = BankHistory::create([
                         'bank_id'           => $request->bank_id_refund[$key],
                         'transaction_name'  => $transaction_name,
@@ -279,6 +423,7 @@ class InvoiceController extends Controller
                 }
             }
         }
+        
     }
 
     public function store_cashback($id, $request)
@@ -295,11 +440,13 @@ class InvoiceController extends Controller
             
             $value->delete();
         }
-        // dd($bank);
+        // dd($check);
 
         if ($request->nominal_cashback) {
             foreach ($request->nominal_cashback as $key => $value) {
+                // dd($value);
                 if ($value !== null) {
+                    // dd('masok');
                     $bank = Bank::find($request->bank_id_cashback[$key]);
                     // dd($bank);
                     
@@ -462,10 +609,12 @@ class InvoiceController extends Controller
     
                         if ($bank->balance < $invoice_d->debt_to_vendors) {
                             // dd('masok');
-                            DB::rollBack();
+                            $this->error = true;
+                            $this->messege = 'Tidak Bisa Melakukan Pelunasan Hutang Vendor, Saldo Bank Tidak Mencukupi !!';
+                            // DB::rollBack();
     
-                            Alert::error('Error', 'Tidak Bisa Melakukan Pelunasan Hutang Vendor, Saldo Bank Tidak Mencukupi !!');
-                            return redirect()->back();
+                            // Alert::error('Error', 'Tidak Bisa Melakukan Pelunasan Hutang Vendor, Saldo Bank Tidak Mencukupi !!');
+                            // return redirect()->back();
                         }
     
     
