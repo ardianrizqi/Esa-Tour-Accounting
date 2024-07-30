@@ -61,6 +61,18 @@ class InvoiceController extends Controller
         if ($id) {
             $data   = Invoice::find($id);
             $data_d = InvoiceDetail::where('invoice_id', $data->id)->get();
+
+            $refund = BankHistory::where('invoice_id', $data->id)
+                    ->where('type', 'refund')
+                    ->get();
+
+            $cashback = BankHistory::where('invoice_id', $data->id)
+                    ->where('type', 'cashback')
+                    ->get();
+
+            $tax = BankHistory::where('invoice_id', $data->id)
+                ->where('type', 'tax')
+                ->get();
         }
                 
         return view('backend.invoice.form', compact('title', 'action', 'provinces', 'customers', 'products', 'physical_invoie', 'bank', 'data', 'data_d', 'tax', 'cashback', 'refund'));

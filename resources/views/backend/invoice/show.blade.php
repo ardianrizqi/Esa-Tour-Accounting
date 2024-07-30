@@ -40,7 +40,7 @@
                                     <div style="width: 60%;">
                                         {{ $data->customer->name }}, {{ $data->customer->address }}
                                     </div>
-                                    <b>Nomor Pajak :</b>
+                                    {{-- <b>Nomor Pajak :</b> --}}
                                 </label>
 
                                 <label for="" style="margin-right: 40%;">
@@ -48,7 +48,7 @@
                                     <div style="width: 60%;">
                                         {{ $data->customer->name }}, {{ $data->customer->address }}
                                     </div>
-                                    <b>Nomor Pajak :</b>
+                                    {{-- <b>Nomor Pajak :</b> --}}
                                 </label>
                             </div>
 
