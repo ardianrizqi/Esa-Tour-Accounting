@@ -33,6 +33,11 @@
                                         <label for="select2Basic" class="form-label">Tanggal Penerbitan</label><span style="color: red;">*</span>
                                         <input type="date" name="date_publisher" class="form-control" id="floatingInput" aria-describedby="floatingInputHelp" required @isset($data) value="{{ $data->date_publisher }}" @endisset/>
                                     </div>
+
+                                    <div class="col-md-3 mb-4">
+                                        <label for="select2Basic" class="form-label">Tanggal Jatuh Tempo</label><span style="color: red;">*</span>
+                                        <input type="date" name="due_date" class="form-control" id="floatingInput" aria-describedby="floatingInputHelp" required @isset($data) value="{{ $data->due_date }}" @endisset/>
+                                    </div>
         
                                     <div class="col-md-3 mb-4">
                                         <label for="physical_invoice_id" class="form-label">Invoice Fisik</label><span style="color: red;">*</span>
@@ -242,7 +247,7 @@
                                             Rp. 0
                                         @endif
                                     </dd>
-                                    <input id="price_selling" name="price_total_selling" type="hidden">
+                                    <input id="price_selling" name="price_total_selling" type="hidden" @if (isset($data)) value="{{ $data->price_total_selling }}" @endif>
 
                                     <hr>
                                     <dt class="col-6 fw-normal text-heading">Total Modal</dt>
@@ -253,7 +258,7 @@
                                             Rp. 0
                                         @endif
                                     </dd>
-                                    <input id="price_purchase" name="price_total_purchase" type="hidden">
+                                    <input id="price_purchase" name="price_total_purchase" type="hidden" @if (isset($data)) value="{{ $data->price_total_purchase }}" @endif>
         
                                     <hr>
                                     <dt class="col-6 fw-normal text-heading">Total Keuntungan</dt>
@@ -264,7 +269,7 @@
                                             Rp. 0
                                         @endif
                                     </dd>
-                                    <input id="profit" name="total_profit" type="hidden">
+                                    <input id="profit" name="total_profit" type="hidden" @if (isset($data)) value="{{ $data->total_profit }}" @endif>
                                 </dl>
                             </div>
                         </div>

@@ -25,12 +25,12 @@
 
                                 <label for="" style="margin-left: 60%;">
                                     Tanggal Penerbitan : <br>
-                                    {{ $data->created_at }}
+                                    {{ $data->date_publisher }}
                                 </label>
 
                                 <label for="">
                                     Tanggal Jatuh Tempo : <br>
-                                    {{ $data->created_at }}
+                                    {{ $data->due_date }}
                                 </label>
                             </div>
 
