@@ -193,6 +193,8 @@
 @endsection
 
 @push('js')
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/numeral.js/2.0.6/numeral.min.js"></script>
+
     <script>
         $(document).ready(function() {
             statistik_default();
@@ -213,11 +215,11 @@
                         var total_pay = document.getElementById("total_pay");
 
                         if (total_invoice) {
-                            total_invoice.textContent = "Rp. " + data.total_invoice.toLocaleString();
+                            total_invoice.textContent = "Rp. " + numeral(data.total_invoice).format('0,0');
                         }
 
                         if (total_pay) {
-                            total_pay.textContent = "Rp. " + data.total_pay.toLocaleString();
+                            total_pay.textContent = "Rp. " + numeral(data.total_pay).format('0,0');
                         }
                     },
                 });
@@ -240,11 +242,11 @@
                         var total_pay = document.getElementById("total_pay");
 
                         if (total_invoice) {
-                            total_invoice.textContent = "Rp. " + data.total_invoice.toLocaleString();
+                            total_invoice.textContent = "Rp. " + numeral(data.total_invoice).format('0,0');
                         }
 
                         if (total_pay) {
-                            total_pay.textContent = "Rp. " + data.total_pay.toLocaleString();
+                            total_pay.textContent = "Rp. " + numeral(data.total_pay).format('0,0');
                         }
                     },
                 });
@@ -264,11 +266,11 @@
                         var total_pay = document.getElementById("total_pay");
 
                         if (total_invoice) {
-                            total_invoice.textContent = "Rp. " + data.total_invoice.toLocaleString();
+                            total_invoice.textContent = "Rp. " + numeral(data.total_invoice).format('0,0');
                         }
 
                         if (total_pay) {
-                            total_pay.textContent = "Rp. " + data.total_pay.toLocaleString();
+                            total_pay.textContent = "Rp. " + numeral(data.total_pay).format('0,0');
                         }
                     },
                 });
