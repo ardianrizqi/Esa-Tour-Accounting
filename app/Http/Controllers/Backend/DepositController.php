@@ -51,10 +51,20 @@ class DepositController extends Controller
     {
         DB::beginTransaction();
 
+        $nominal = $request->nominal;
+        $nominal = str_replace('.', '', $nominal);
+        $nominal = str_replace(',', '', $nominal);
+        $nominal = preg_replace('/[^0-9]/', '', $nominal);
+    
+        // Convert the nominal to a float if needed
+        $nominal = floatval($nominal);
+        // dd($nominal);
+
         try {
             if ($request->deposit_id) {
                 $requestData = array_merge($request->all(), [
                     'updated_user'  => Auth::user()->id,
+                    'nominal'   => $nominal,
                 ]);
 
                 $data = Deposit::find($request->bank_id);
@@ -63,6 +73,7 @@ class DepositController extends Controller
                 $requestData = array_merge($request->all(), [
                     'created_user'  => Auth::user()->id,
                     'updated_user'  => Auth::user()->id,
+                    'nominal'   => $nominal
                 ]);
 
                 $data = Deposit::create($requestData);
@@ -74,7 +85,7 @@ class DepositController extends Controller
             Alert::success('Sukses', 'Berhasil Menyimpan Data');
             return redirect()->route('backend.deposit.index');
         } catch (\Throwable $th) {
-            // dd($th->getMessage());
+            dd($th->getMessage());
             DB::rollBack();
 
             Alert::error('Gagal', 'Terjadi Kesalahan Pada Server, Coba Lagi Kembali');
