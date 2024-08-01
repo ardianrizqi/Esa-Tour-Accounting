@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Backend;
 
 use App\Http\Controllers\Controller;
 use App\Models\Bank;
+use App\Models\BankHistory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use RealRashid\SweetAlert\Facades\Alert;
@@ -106,5 +107,24 @@ class BankController extends Controller
                 'message'   => 'Gagal Menyimpan Data, Coba Lagi Kembali',
             ]);
         }
+    }
+
+    public function history($id)
+    {
+        $title      = 'Riwayat Bank';
+                
+        return view('backend.bank.history', compact('title', 'id'));
+    }
+
+    public function history_data(Request $request)
+    {
+        // dd($request);
+        $data = BankHistory::where('bank_id', $request->bank_id);
+
+        if ($request->date) {
+            $data->whereDate('date', $request->date);
+        }
+     
+        return response()->json(['data' => $data->get()]);
     }
 }

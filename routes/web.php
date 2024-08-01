@@ -54,6 +54,8 @@ Route::middleware('auth')->group(function () {
             Route::post('/store', 'BankController@store')->name('bank.store');
             Route::get('/edit/{id}', 'BankController@form')->name('bank.edit');
             Route::delete('/destroy/{id}', 'BankController@destroy')->name('bank.destroy');
+            Route::get('/history/data', 'BankController@history_data')->name('bank.history_data');
+            Route::get('/history/{id}', 'BankController@history')->name('bank.history');
         });
 
         Route::group(['prefix' => 'physical-invoice'], function () {

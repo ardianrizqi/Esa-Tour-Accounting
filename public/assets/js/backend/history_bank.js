@@ -4,7 +4,13 @@ $(function () {
 
     if (table.length) {
         dt_basic = table.DataTable({
-            ajax: "bank/data",
+            ajax: {
+                url: 'data',
+                data: function(d) {
+                    d.date = $('#date').val();
+                    d.bank_id = $('#bank_id').val();
+                }
+            },
             dataSrc: 'data',
             columns: [
                 {
@@ -14,47 +20,33 @@ $(function () {
                     },
                     orderable: false
                 },
-                { data: 'bank_name' },
+                { data: 'transaction_name' },
                 {
-                    data: 'income',
+                    data: null,
+                    render: function (data, type, row) {
+                       if (data['type'] == 'customer_payment' || data['type'] == 'cashback') {
+                            return 'Pemasukan';
+                       }else if(data['type'] == 'vendor_payment' || data['type'] == 'refund' || data['type'] == 'tax'){
+                            return  'Pengeluaran';
+                       }else{
+                            return '-';
+                       }
+                    }
+                },
+                {
+                    data: 'nominal',
                     render: function (data, type, row) {
                         return 'Rp.' + parseFloat(data).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
                     }
                 },
-                {
-                    data: 'expense',
-                    render: function (data, type, row) {
-                        return 'Rp.' + parseFloat(data).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
-                    }
-                },
-                {
-                    data: 'balance',
-                    render: function (data, type, row) {
-                        return 'Rp.' + parseFloat(data).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
-                    }
-                },
-                { data: null, defaultContent: '' }
+                { data: 'date' },
             ],
             columnDefs: [
                 { responsivePriority: 1, targets: 1 },
                 { responsivePriority: 2, targets: 2 },
                 { responsivePriority: 3, targets: 3 },
-                {
-                    // Actions
-                    targets: -1,
-                    title: 'Actions',
-                    orderable: false,
-                    searchable: false,
-                    render: function (data, type, full, meta) {
-                      return (
-                        '<a href="bank/history/'+ full.id + '" class="btn btn-sm btn-icon item-edit"><i class="text-primary ti ti-eye"></i></a>'+
-                        '<a href="bank/edit/'+ full.id + '" class="btn btn-sm btn-icon item-edit"><i class="text-primary ti ti-pencil"></i></a>'+
-                        '<a href="javascript:;" class="btn btn-sm btn-icon item-delete"><i class="text-primary ti ti-trash"></i></a>'
-                      );
-                    }
-                  }
             ],
-            order: [[1, 'desc']],
+            // order: [[1, 'desc']],
             dom: '<"card-header flex-column flex-md-row"<"head-label text-center"><"dt-action-buttons text-end pt-3 pt-md-0"B>><"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6 d-flex justify-content-center justify-content-md-end"f>>t<"row"<"col-sm-12 col-md-6"i><"col-sm-12 col-md-6"p>>',
             displayLength: 10,
             lengthMenu: [7, 10, 25, 50, 75, 100],
@@ -141,4 +133,9 @@ $(function () {
             });
         });
     }
+
+    $('#filter-button').on('click', function() {
+        // console.log('masok');
+        dt_basic.ajax.reload();
+    });
 });

@@ -22,7 +22,9 @@
                                 <h5 class="card-title mb-1 pt-2">Pemasukan Hari Ini</h5>
                             </center>
 
-                            <p class="mb-2 mt-1" style="color: #FFC55A; font-size: 30px;">Rp. 1.000.000</p>
+                            <center>
+                                <p class="mb-2 mt-1" style="color: #FFC55A; font-size: 20px;">Rp. {{ number_format($today_income, 2) }}</p>
+                            </center>
                         </div>
                     </div>
                 </div>
@@ -39,7 +41,9 @@
                                 <h5 class="card-title mb-1 pt-2">Pemasukan Bulan Ini</h5>
                             </center>
 
-                            <p class="mb-2 mt-1" style="color: #FFA21D; font-size: 30px;">Rp. 1.000.000</p>
+                            <center>
+                                <p class="mb-2 mt-1" style="color: #FFA21D; font-size: 20px;">Rp. {{ number_format($month_income, 2) }}</p>
+                            </center>
                         </div>
                     </div>
                 </div>
@@ -56,7 +60,9 @@
                                 <h5 class="card-title mb-1 pt-2">Pengeluaran Hari Ini</h5>
                             </center>
 
-                            <p class="mb-2 mt-1" style="color: #5BD1DC; font-size: 30px;">Rp. 1.000.000</p>
+                            <center>
+                                <p class="mb-2 mt-1" style="color: #5BD1DC; font-size: 20px;">Rp. {{ number_format($today_expense, 2) }}</p>
+                            </center>
                         </div>
                     </div>
                 </div>
@@ -73,7 +79,9 @@
                                 <h5 class="card-title mb-1 pt-2">Pengeluaran Bulan Ini</h5>
                             </center>
 
-                            <p class="mb-2 mt-1" style="color: #FF3A6E; font-size: 30px;">Rp. 1.000.000</p>
+                            <center>
+                                <p class="mb-2 mt-1" style="color: #FF3A6E; font-size: 20px;">Rp. {{ number_format($month_expense, 2) }}</p>
+                            </center>
                         </div>
                     </div>
                 </div>

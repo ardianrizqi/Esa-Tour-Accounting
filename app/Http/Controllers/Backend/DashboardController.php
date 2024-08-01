@@ -20,9 +20,25 @@ class DashboardController extends Controller
     public function index()
     {
         $title = $this->title;
+        $currentMonth = Carbon::now()->month;
         $invoice = Invoice::orderBy('created_at', 'desc')->take(5)->get();
+        $today_income = BankHistory::whereDate('date', Carbon::now())
+                ->whereIn('type', ['customer_payment', 'cashback'])    
+                ->sum('nominal');
+
+        $month_income = BankHistory::whereMonth('date', $currentMonth)
+                ->whereIn('type', ['customer_payment', 'cashback'])    
+                ->sum('nominal');
+
+        $today_expense = BankHistory::whereDate('date', Carbon::now())
+                ->whereIn('type', ['vendor_payment', 'refund', 'tax'])    
+                ->sum('nominal');
+
+        $month_expense = BankHistory::whereMonth('date', $currentMonth)
+                ->whereIn('type', ['vendor_payment', 'refund', 'tax'])    
+                ->sum('nominal');
                 
-        return view('backend.dashboard.index', compact('title', 'invoice'));
+        return view('backend.dashboard.index', compact('title', 'invoice', 'today_income', 'month_income', 'today_expense', 'month_expense'));
     }
 
     public function total_invoice(Request $request)
