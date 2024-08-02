@@ -14,7 +14,7 @@ return new class extends Migration
             $table->float('income')->default(0);
             $table->float('expense')->default(0);
             $table->renameColumn('nominal', 'balance');
-            $table->float('balance')->change();
+            // $table->float('balance')->change();
         });
     }
 
