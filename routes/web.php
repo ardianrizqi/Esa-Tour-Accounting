@@ -56,6 +56,7 @@ Route::middleware('auth')->group(function () {
             Route::delete('/destroy/{id}', 'BankController@destroy')->name('bank.destroy');
             Route::get('/history/data', 'BankController@history_data')->name('bank.history_data');
             Route::get('/history/{id}', 'BankController@history')->name('bank.history');
+            Route::post('/transfer', 'BankController@transfer')->name('bank.transfer');
         });
 
         Route::group(['prefix' => 'physical-invoice'], function () {
@@ -93,6 +94,7 @@ Route::middleware('auth')->group(function () {
             Route::get('/edit/{id}', 'ExpenseController@form')->name('expense.edit');
             Route::delete('/destroy/{id}', 'ExpenseController@destroy')->name('expense.destroy');
             Route::post('/category-store', 'ExpenseController@category_store')->name('expense.category_store');
+            Route::delete('/destroy/{id}', 'ExpenseController@destroy')->name('expense.destroy');
         });
 
         Route::group(['prefix' => 'deposit'], function () {

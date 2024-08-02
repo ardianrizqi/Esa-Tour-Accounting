@@ -8,7 +8,7 @@ function calculate_bank_income($data, $nominal, $is_deduction = false)
         // dd('masok');
         $data->update([
             'income'    => $data->income - $nominal,
-            'balance'   => $data->balance - $nominal
+            'balance'   => ($data->income - $nominal) - $data->expense,
         ]);
     }else{
         $data->update([
@@ -42,13 +42,13 @@ function calculate_bank_expense($data, $nominal, $is_increase = false)
     if ($is_increase) {
         $data->update([
             'expense'   => $data->expense + $nominal,
-            'balance'   => $data->balance - $nominal
+            'balance'   => $data->income - ($data->expense + $nominal)
         ]);
 
     }else{
         $data->update([
             'expense'   => $data->expense - $nominal,
-            'balance'   => $data->balance + $nominal
+            'balance'   => $data->income + ($data->expense - $nominal)
         ]);
     }
 

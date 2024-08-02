@@ -84,6 +84,11 @@ $(function () {
             }
         });
 
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            }
+        });
         
         $('#bank-table').on('click', '.item-delete', function () {
             var row = $(this).closest('tr');
@@ -106,13 +111,7 @@ $(function () {
                     var url = deleteUrl.replace(':id', id);
                     // console.log(url);
                     // Perform the delete operation (e.g., send an AJAX request to the server)
-                    $.ajaxSetup({
-                        headers: {
-                            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                        }
-                    });
-            
-                    
+                   
                     $.ajax({
                         url: url,
                         type: 'DELETE',
@@ -152,4 +151,53 @@ $(function () {
             });
         });
     }
+    
+    $('#transfer_form').on('submit', function(event) {
+        event.preventDefault();
+
+        var formData = $(this).serialize();
+        $('#loading').show();
+
+        $.ajax({
+            url: 'bank/transfer',
+            type: 'POST',
+            data: formData,
+            dataType: 'json',
+            success: function(data) {
+                if (data.status == 200) {
+                    Swal.fire('Sukses !!', data.message, 'success');
+                }else{
+                    Swal.fire('Gagal !!', data.message, 'error');
+                }
+                dt_basic.ajax.reload();
+               
+                $('#loading').hide();
+                $('#transfer').find('.btn-close').trigger('click');
+            },
+            error: function(xhr, status, error) {
+              
+            }
+        });
+    });
+
+    function formatCurrency(value, prefix = "Rp. ") {
+        var number_string = value.replace(/[^,\d]/g, '').toString(),
+            split = number_string.split(','),
+            remainder = split[0].length % 3,
+            rupiah = split[0].substr(0, remainder),
+            thousand = split[0].substr(remainder).match(/\d{3}/gi);
+
+        if (thousand) {
+            separator = remainder ? '.' : '';
+            rupiah += separator + thousand.join('.');
+        }
+
+        rupiah = split[1] != undefined ? rupiah + ',' + split[1] : rupiah;
+        return rupiah;
+    }
+
+    $('#nominal').on('keyup', function() {
+        var formattedValue = formatCurrency(this.value);
+        $(this).val(formattedValue);
+    });
 });

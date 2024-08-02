@@ -101,6 +101,7 @@ class ExpenseController extends Controller
                 'message'   => 'Data Berhasil Dihapus.',
             ]);
         } catch (\Throwable $th) {
+            dd($th->getMessage());
             DB::rollBack();
 
             return response()->json([

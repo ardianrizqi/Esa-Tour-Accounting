@@ -15,9 +15,24 @@ $(function () {
                     orderable: false
                 },
                 { data: 'product_category' },
-                { data: 'sale' },
-                { data: 'purchase' },
-                { data: 'profit' },
+                {
+                    data: 'sale',
+                    render: function (data, type, row) {
+                        return 'Rp.' + parseFloat(data).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+                    }
+                },
+                {
+                    data: 'purchase',
+                    render: function (data, type, row) {
+                        return 'Rp.' + parseFloat(data).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+                    }
+                },
+                {
+                    data: 'profit',
+                    render: function (data, type, row) {
+                        return 'Rp.' + parseFloat(data).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+                    }
+                },
                 { data: null, defaultContent: '' }
             ],
             columnDefs: [

@@ -36,7 +36,7 @@
 @push('js')
     <script src="{{ asset('assets/js/backend/expense.js') }}"></script>
     <script>
-        var deleteUrl = '{{ route("backend.credit_debit.destroy", ":id") }}';
+        var deleteUrl = '{{ route("backend.expense.destroy", ":id") }}';
     </script>
 @endpush
 

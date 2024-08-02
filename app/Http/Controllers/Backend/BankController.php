@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\DB;
 use RealRashid\SweetAlert\Facades\Alert;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Customer;
+use Carbon\Carbon;
 
 
 class BankController extends Controller
@@ -24,8 +25,9 @@ class BankController extends Controller
     public function index()
     {
         $title      = $this->title;
+        $banks = Bank::all();
                 
-        return view('backend.bank.index', compact('title'));
+        return view('backend.bank.index', compact('title', 'banks'));
     }
 
     public function data()
@@ -143,5 +145,68 @@ class BankController extends Controller
         }
      
         return response()->json(['data' => $data->get()]);
+    }
+
+    public function transfer(Request $request)
+    {
+        DB::beginTransaction();
+
+        $nominal = $request->nominal;
+        $nominal = str_replace('.', '', $nominal);
+        $nominal = str_replace(',', '', $nominal);
+        $nominal = preg_replace('/[^0-9]/', '', $nominal);
+
+
+        try {
+            $from_bank = Bank::find($request->from_bank);
+            $to_bank = Bank::find($request->to_bank);
+            
+            if ($nominal > $from_bank->balance) {
+                DB::rollBack();
+
+                return response()->json([
+                    'status'    => 400,
+                    'message'   => 'Gagal Melakukan Transfer, Saldo Tidak Cukup',
+                ]);
+            }
+
+            calculate_bank_expense($from_bank, $nominal, true);
+
+            $create = BankHistory::create([
+                'bank_id'           => $from_bank->id,
+                'transaction_name'  => 'Transfer Bank ke '.$to_bank->account_name.' Bank '.$to_bank->bank_name.' No Rek: '.$to_bank->account_number,
+                'date'              => Carbon::now(),
+                'type'              => 'transfer_expense',
+                'nominal'           => $nominal,
+                'created_user'      => Auth::user()->id,
+                'updated_user'      => Auth::user()->id
+            ]);
+
+            calculate_bank_income($to_bank, $nominal);
+
+            $create = BankHistory::create([
+                'bank_id'           => $to_bank->id,
+                'transaction_name'  => 'Transfer Bank dari '.$from_bank->account_name.' Bank '.$from_bank->bank_name.' No Rek: '.$from_bank->account_number,
+                'date'              => Carbon::now(),
+                'type'              => 'transfer_income',
+                'nominal'           => $nominal,
+                'created_user'      => Auth::user()->id,
+                'updated_user'      => Auth::user()->id
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'status'    => 200,
+                'message'   => 'Berhasil Menyimpan Data',
+            ]);
+        } catch (\Throwable $th) {
+            DB::rollBack();
+
+            return response()->json([
+                'status'    => 400,
+                'message'   => 'Gagal Menyimpan Data, Coba Lagi Kembali',
+            ]);
+        }
     }
 }
