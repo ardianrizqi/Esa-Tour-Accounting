@@ -137,6 +137,18 @@ class DepositController extends Controller
 
         try {
             $data = Deposit::find($id);
+
+            $check = BankHistory::where('deposit_id', $data->id)
+            ->where('type', 'deposit')
+            ->get();
+
+            foreach ($check as $key => $value) {
+                $bank = Bank::find($data->bank_id);
+                calculate_bank_expense($bank, $value->nominal);
+                
+                $value->delete();
+            }
+
             $data->delete();
 
             DB::commit();
