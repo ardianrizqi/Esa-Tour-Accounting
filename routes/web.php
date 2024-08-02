@@ -118,6 +118,15 @@ Route::middleware('auth')->group(function () {
         Route::group(['prefix' => 'scale'], function () {
             Route::get('/', 'ScaleController@index')->name('scale.index');
         });
+
+        Route::group(['prefix' => 'category-note'], function () {
+            Route::get('/', 'CategoryNoteController@index')->name('category_note.index');
+            Route::get('/data', 'CategoryNoteController@data')->name('category_note.data');
+            Route::get('/create', 'CategoryNoteController@form')->name('category_note.create');
+            Route::post('/store', 'CategoryNoteController@store')->name('category_note.store');
+            Route::get('/edit/{id}', 'CategoryNoteController@form')->name('category_note.edit');
+            Route::delete('/destroy/{id}', 'CategoryNoteController@destroy')->name('category_note.destroy');
+        });
     });
 
 });
