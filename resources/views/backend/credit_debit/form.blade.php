@@ -31,8 +31,31 @@
                                     <input type="text" id="name" name="name" class="form-control"
                                         placeholder="Ketik Nama Biaya" required @isset($data) value="{{ $data->name }}" @endisset/>
                                 </div>
-    
 
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label" for="account_id">Invoice</label><span style="color: red;">*</span>
+                                    <select id="invoice_id" name="invoice_id" class="select2 form-select"
+                                        aria-label="Default select example" required>
+                                        <option>-- Pilih Invoice --</option>
+
+                                        @foreach($invoices as $item)
+                                            <option @isset($data) @if($item->id == $data->invoice_id) selected @endif @endisset value="{{ $item->id }}" >{{ $item->invoice_number }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label" for="account_id">Kategori Note</label><span style="color: red;">*</span>
+                                    <select id="category_note_id" name="category_note_id" class="select2 form-select"
+                                        aria-label="Default select example" required>
+                                        <option>-- Pilih Kategori --</option>
+
+                                        @foreach($categories_note as $item)
+                                            <option @isset($data) @if($item->id == $data->category_note_id) selected @endif @endisset value="{{ $item->id }}" >{{ $item->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+    
                                 <div class="col-12 col-md-6">
                                     <label for="select2Basic" class="form-label">Nominal</label><span style="color: red;">*</span>
                                     <div class="input-group">
@@ -42,7 +65,7 @@
                                 </div>
 
                                 <div class="col-12 col-md-6">
-                                    <label class="form-label" for="account_id">Ke bank</label><span style="color: red;">*</span>
+                                    <label class="form-label" for="account_id">Bank</label><span style="color: red;">*</span>
                                     <select id="bank_id" name="bank_id" class="select2 form-select"
                                         aria-label="Default select example" required>
                                         <option>-- Pilih Bank --</option>
@@ -55,7 +78,7 @@
 
                                 <div class="col-12 col-md-6">
                                     <label class="form-label" for="account_id">Type</label><span style="color: red;">*</span>
-                                    <select id="bank_id" name="type" class="select2 form-select"
+                                    <select id="type" name="type" class="select2 form-select"
                                         aria-label="Default select example" required>
                                         <option>-- Pilih Type --</option>
                                         <option @isset($data) @if($data->type == 'Kredit') selected @endif @endisset value="Kredit">Kredit</option>
@@ -193,6 +216,27 @@
             if ($('#province_id').val()) {
                 $('#province_id').trigger('change');
             }
+
+            function formatCurrency(value, prefix = "Rp. ") {
+                var number_string = value.replace(/[^,\d]/g, '').toString(),
+                    split = number_string.split(','),
+                    remainder = split[0].length % 3,
+                    rupiah = split[0].substr(0, remainder),
+                    thousand = split[0].substr(remainder).match(/\d{3}/gi);
+
+                if (thousand) {
+                    separator = remainder ? '.' : '';
+                    rupiah += separator + thousand.join('.');
+                }
+
+                rupiah = split[1] != undefined ? rupiah + ',' + split[1] : rupiah;
+                return rupiah;
+            }
+
+            $('#nominal').on('keyup', function() {
+                var formattedValue = formatCurrency(this.value);
+                $(this).val(formattedValue);
+            });
         });
 
     </script>

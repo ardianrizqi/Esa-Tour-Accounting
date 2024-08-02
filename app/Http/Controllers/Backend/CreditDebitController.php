@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Backend;
 
 use App\Http\Controllers\Controller;
 use App\Models\Bank;
+use App\Models\CategoryNote;
 use App\Models\CreditDebit;
+use App\Models\Invoice;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use RealRashid\SweetAlert\Facades\Alert;
@@ -40,23 +42,30 @@ class CreditDebitController extends Controller
         $title      = $this->title;
         $action     = 'Tambah';
         $banks   = Bank::all();
+        $invoices = Invoice::all();
+        $categories_note = CategoryNote::all();
 
         if ($id) {
             $action = 'Edit';
             $data = CreditDebit::find($id);
         }
                 
-        return view('backend.credit_debit.form', compact('title', 'action', 'data', 'banks'));
+        return view('backend.credit_debit.form', compact('title', 'action', 'data', 'banks', 'invoices', 'categories_note'));
     }
 
     public function store(Request $request)
     {
         DB::beginTransaction();
+        $nominal = $request->nominal;
+        $nominal = str_replace('.', '', $nominal);
+        $nominal = str_replace(',', '', $nominal);
+        $nominal = preg_replace('/[^0-9]/', '', $nominal);
 
         try {
             if ($request->credit_debit_id) {
                 $requestData = array_merge($request->all(), [
                     'updated_user'  => Auth::user()->id,
+                    'nominal'   => $nominal
                 ]);
 
                 $data = CreditDebit::find($request->bank_id);
@@ -65,6 +74,7 @@ class CreditDebitController extends Controller
                 $requestData = array_merge($request->all(), [
                     'created_user'  => Auth::user()->id,
                     'updated_user'  => Auth::user()->id,
+                    'nominal'   => $nominal
                 ]);
 
                 $data = CreditDebit::create($requestData);
