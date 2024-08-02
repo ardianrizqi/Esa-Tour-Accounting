@@ -13,7 +13,7 @@ function calculate_bank_income($data, $nominal, $is_deduction = false)
     }else{
         $data->update([
             'income'    => $data->income + $nominal,
-            'balance'   => $data->balance + $nominal
+            'balance'   => ($data->income + $nominal) - $data->expense,
         ]);
     }
 

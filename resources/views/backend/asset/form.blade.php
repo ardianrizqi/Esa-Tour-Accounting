@@ -177,6 +177,27 @@
             if ($('#province_id').val()) {
                 $('#province_id').trigger('change');
             }
+
+            function formatCurrency(value, prefix = "Rp. ") {
+                var number_string = value.replace(/[^,\d]/g, '').toString(),
+                    split = number_string.split(','),
+                    remainder = split[0].length % 3,
+                    rupiah = split[0].substr(0, remainder),
+                    thousand = split[0].substr(remainder).match(/\d{3}/gi);
+
+                if (thousand) {
+                    separator = remainder ? '.' : '';
+                    rupiah += separator + thousand.join('.');
+                }
+
+                rupiah = split[1] != undefined ? rupiah + ',' + split[1] : rupiah;
+                return rupiah;
+            }
+
+            $('#nominal').on('keyup', function() {
+                var formattedValue = formatCurrency(this.value);
+                $(this).val(formattedValue);
+            });
         });
 
     </script>

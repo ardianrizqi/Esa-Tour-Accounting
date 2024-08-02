@@ -96,7 +96,8 @@ class DepositController extends Controller
                 $requestData = array_merge($request->all(), [
                     'created_user'  => Auth::user()->id,
                     'updated_user'  => Auth::user()->id,
-                    'balance'       => $request->beginning_balance
+                    'balance'           => $nominal,
+                    'beginning_balance' => $nominal
                 ]);
 
                 $data = Deposit::create($requestData);
