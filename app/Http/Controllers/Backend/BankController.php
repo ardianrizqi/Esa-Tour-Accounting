@@ -53,11 +53,17 @@ class BankController extends Controller
     {
         DB::beginTransaction();
 
+        $nominal = $request->beginning_balance;
+        $nominal = str_replace('.', '', $nominal);
+        $nominal = str_replace(',', '', $nominal);
+        $nominal = preg_replace('/[^0-9]/', '', $nominal);
+
         try {
             if ($request->product_id) {
                 $requestData = array_merge($request->all(), [
                     'updated_user'  => Auth::user()->id,
-                    'balance'       => $request->beginning_balance
+                    'balance'       => $nominal,
+                    'beginning_balance' => $nominal
                 ]);
 
                 $data = Bank::find($request->bank_id);
@@ -66,7 +72,8 @@ class BankController extends Controller
                 $requestData = array_merge($request->all(), [
                     'created_user'  => Auth::user()->id,
                     'updated_user'  => Auth::user()->id,
-                    'balance'       => $request->beginning_balance
+                    'balance'       => $nominal,
+                    'beginning_balance' => $nominal
                 ]);
 
                 $data = Bank::create($requestData);
@@ -91,6 +98,14 @@ class BankController extends Controller
 
         try {
             $data = Bank::find($id);
+            
+            $check = BankHistory::where('bank_id', $data->id)->get();
+            // dd($check);
+
+            foreach ($check as $key => $value) {
+                $value->delete();
+            }
+
             $data->delete();
 
             DB::commit();
@@ -100,6 +115,8 @@ class BankController extends Controller
                 'message'   => 'Data Berhasil Dihapus.',
             ]);
         } catch (\Throwable $th) {
+            // dd($th->getMessage());
+
             DB::rollBack();
 
             return response()->json([

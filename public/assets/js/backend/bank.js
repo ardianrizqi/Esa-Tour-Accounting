@@ -85,7 +85,7 @@ $(function () {
         });
 
         
-        $('#product-table').on('click', '.item-delete', function () {
+        $('#bank-table').on('click', '.item-delete', function () {
             var row = $(this).closest('tr');
             var data = dt_basic.row(row).data();
             // console.log(data.id);
@@ -117,14 +117,25 @@ $(function () {
                         url: url,
                         type: 'DELETE',
                         success: function (result) {
+                            if (result.status == 400) {
+                                Swal.fire(
+                                    'Error!',
+                                    'Tidak bisa menghapus data, harap hapus transaksi terlebih dahulu.',
+                                    'error'
+                                );
+    
+                            }else{
+                                dt_basic.row(row).remove().draw();
+                                Swal.fire(
+                                    'Deleted!',
+                                    'Data Berhasil Dihapus.',
+                                    'success'
+                                );
+    
+                            }
+                            // console.log(result);
                             // On success, remove the row from the table
-                            dt_basic.row(row).remove().draw();
-                            Swal.fire(
-                                'Deleted!',
-                                'Data Berhasil Dihapus.',
-                                'success'
-                            );
-
+                        
                             $('#loading').hide();
                         },
                         error: function (xhr, status, error) {
