@@ -49,7 +49,7 @@
                                     <label for="select2Basic" class="form-label">Nominal</label><span style="color: red;">*</span>
                                     <div class="input-group">
                                         <span class="input-group-text" id="basic-addon11">Rp.</span>
-                                        <input id="nominal" type="text" class="form-control" placeholder="" aria-label="" aria-describedby="basic-addon11"  name="nominal" @isset($data) value="{{ $data->nominal }}" @endisset required/>
+                                        <input id="beginning_balance" type="text" class="form-control" placeholder="" aria-label="" aria-describedby="basic-addon11"  name="beginning_balance" @isset($data) value="{{ $data->beginning_balance }}" @endisset required/>
                                     </div>
                                 </div>
 
@@ -163,7 +163,7 @@
                 return rupiah;
             }
 
-            $('#nominal').on('keyup', function() {
+            $('#beginning_balance').on('keyup', function() {
                 var formattedValue = formatCurrency(this.value);
                 $(this).val(formattedValue);
             });

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Backend;
 
 use App\Http\Controllers\Controller;
 use App\Models\Bank;
+use App\Models\BankHistory;
 use App\Models\Deposit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -51,7 +52,7 @@ class DepositController extends Controller
     {
         DB::beginTransaction();
 
-        $nominal = $request->nominal;
+        $nominal = $request->beginning_balance;
         $nominal = str_replace('.', '', $nominal);
         $nominal = str_replace(',', '', $nominal);
         $nominal = preg_replace('/[^0-9]/', '', $nominal);
@@ -61,23 +62,60 @@ class DepositController extends Controller
         // dd($nominal);
 
         try {
+            $bank = Bank::find($request->bank_id);
+
+            // dd($nominal);
+            if ($nominal > $bank->balance) {
+                DB::rollBack();
+                Alert::error('Error', 'Tidak Bisa Melakukan Deposit, Saldo Bank Rp. '.number_format($bank->balance, 2));
+                return redirect()->back();
+            }
+
+
             if ($request->deposit_id) {
+                $check = BankHistory::where('deposit_id', $request->deposit_id)
+                        ->where('type', 'deposit')
+                        ->get();
+
+                foreach ($check as $key => $value) {
+                    $bank = Bank::find($value->bank_id);
+                    calculate_bank_expense($bank, $value->nominal);
+                    
+                    $value->delete();
+                }
+
                 $requestData = array_merge($request->all(), [
-                    'updated_user'  => Auth::user()->id,
-                    'nominal'   => $nominal,
+                    'updated_user'      => Auth::user()->id,
+                    'balance'           => $nominal,
+                    'beginning_balance' => $nominal
                 ]);
 
-                $data = Deposit::find($request->bank_id);
+                $data = Deposit::find($request->deposit_id);
                 $data->update($requestData);
             }else{
                 $requestData = array_merge($request->all(), [
                     'created_user'  => Auth::user()->id,
                     'updated_user'  => Auth::user()->id,
-                    'nominal'   => $nominal
+                    'balance'       => $request->beginning_balance
                 ]);
 
                 $data = Deposit::create($requestData);
             }
+
+            calculate_bank_expense($bank, $nominal, true);
+
+            $transaction_name = 'Deposit dari '.$request->name;
+
+            $create = BankHistory::create([
+                'bank_id'           => $request->bank_id,
+                'transaction_name'  => $transaction_name,
+                'deposit_id'        => $data->id,
+                'date'              => $request->date,
+                'type'              => 'deposit',
+                'nominal'           => $nominal,
+                'created_user'      => Auth::user()->id,
+                'updated_user'      => Auth::user()->id
+            ]);
 
             DB::commit();
 
