@@ -8,12 +8,12 @@ function calculate_bank_income($data, $nominal, $is_deduction = false)
         // dd('masok');
         $data->update([
             'income'    => $data->income - $nominal,
-            'balance'   => ($data->income - $nominal) - $data->expense,
+            'balance'   => ($data->beginning_balance + $data->income) - $nominal - $data->expense,
         ]);
     }else{
         $data->update([
             'income'    => $data->income + $nominal,
-            'balance'   => ($data->income + $nominal) - $data->expense,
+            'balance'   => ($data->income + $nominal + $data->beginning_balance) - $data->expense,
         ]);
     }
 
@@ -42,13 +42,13 @@ function calculate_bank_expense($data, $nominal, $is_increase = false)
     if ($is_increase) {
         $data->update([
             'expense'   => $data->expense + $nominal,
-            'balance'   => $data->income - ($data->expense + $nominal)
+            'balance'   => ($data->beginning_balance + $data->income) - ($data->expense + $nominal)
         ]);
 
     }else{
         $data->update([
             'expense'   => $data->expense - $nominal,
-            'balance'   => $data->income + ($data->expense - $nominal)
+            'balance'   => ($data->beginning_balance + $data->income) + ($data->expense - $nominal)
         ]);
     }
 
@@ -80,4 +80,42 @@ function calculate_profit_product($data, $is_increase = true)
             'profit'   => $data->profit + ($data->selling_price - $data->purchase_price),
         ]);
     }
+}
+
+function calculate_deposit_income($data, $nominal, $is_deduction = false)
+{
+    // dd('masok');
+    if ($is_deduction) {
+        // dd('masok');
+        $data->update([
+            'income'    => $data->income - $nominal,
+            'balance'   => ($data->beginning_balance + $data->income) - $nominal - $data->expense,
+        ]);
+    }else{
+        $data->update([
+            'income'    => $data->income + $nominal,
+            'balance'   => ($data->income + $nominal +  $data->beginning_balance) - $data->expense,
+        ]);
+    }
+
+    // dd('maosk');
+    return $data;
+}
+
+function calculate_deposit_expense($data, $nominal, $is_increase = false)
+{
+    if ($is_increase) {
+        $data->update([
+            'expense'   => $data->expense + $nominal,
+            'balance'   => ($data->income + $data->beginning_balance) - ($data->expense + $nominal)
+        ]);
+
+    }else{
+        $data->update([
+            'expense'   => $data->expense - $nominal,
+            'balance'   => ($data->income + $data->beginning_balance) + ($data->expense - $nominal)
+        ]);
+    }
+
+    return $data;
 }

@@ -34,6 +34,7 @@
                         <tr>
                             <th>No</th>
                             <th>Nama Bank</th>
+                            <th>Saldo Awal</th>
                             <th>Pemasukan</th>
                             <th>Pengeluaran</th>
                             <th>Saldo</th>

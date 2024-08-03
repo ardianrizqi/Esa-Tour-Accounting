@@ -13,6 +13,8 @@ use App\Models\Product;
 use App\Models\PhysicalInvoice;
 use App\Models\Bank;
 use App\Models\BankHistory;
+use App\Models\Deposit;
+use App\Models\DepositHistory;
 use App\Models\Invoice;
 use App\Models\InvoiceDetail;
 use App\Models\Tax;
@@ -54,6 +56,7 @@ class InvoiceController extends Controller
         $products           = Product::all();
         $physical_invoie    = PhysicalInvoice::all();
         $bank               = Bank::all();
+        $deposit            = Deposit::all();
         $tax = [];
         $cashback = [];
         $refund = [];
@@ -75,7 +78,7 @@ class InvoiceController extends Controller
                 ->get();
         }
                 
-        return view('backend.invoice.form', compact('title', 'action', 'provinces', 'customers', 'products', 'physical_invoie', 'bank', 'data', 'data_d', 'tax', 'cashback', 'refund'));
+        return view('backend.invoice.form', compact('title', 'action', 'provinces', 'customers', 'products', 'physical_invoie', 'bank', 'data', 'data_d', 'tax', 'cashback', 'refund', 'deposit'));
     }
 
     public function get_city($province_id)
@@ -174,8 +177,7 @@ class InvoiceController extends Controller
                 $value->delete();
             }
 
-            // dd('masok');
-            // dd($request);
+         
             # pembayaran customer
             if ($request->nominal) {
                 foreach ($request->nominal as $key => $value) {
@@ -282,27 +284,94 @@ class InvoiceController extends Controller
                 return redirect()->back();
             }
 
-            // dd($request->category_id);
+            // dd($request);
             foreach ($request->category_id as $key => $value) {
-                // dd($insert_h);
+                $fromBank = $request->from_bank[$key];
+                [$source, $id] = explode('-', $fromBank);
+        
+                $transaction_name = 'Invoice dari '.$insert_h->invoice_number. ' Ket: '.$request->note[$key];
+                // dd($id);
+                if ($source == 'bank') {
+                    $bank = Bank::find($id);
 
-                $param_d = [
-                    'invoice_id'        => $insert_h->id,
-                    'category_id'       => $value,
-                    'product_name'      => $request->product_name[$key],
-                    'qty'               => $request->qty[$key],
-                    'selling_price'     => $request->selling_price[$key],
-                    'from_bank'         => $request->from_bank[$key],
-                    'purchase_price'    => $request->purchase_price[$key],
-                    'note'              => $request->note[$key],
-                    'debt_to_vendors'   => $request->debt_to_vendors[$key],
-                    'total_price_sell'  => $request->total_price_sell[$key],
-                    'created_user'      => Auth::user()->id,
-                    'updated_user'      => Auth::user()->id
-                ];
+                    if ($request->purchase_price[$key] > $bank->balance) {
+                        DB::rollBack();
+                        Alert::error('Error', 'Saldo Bank Tidak Cukup. Balance : '.$bank->balance);
+                        return redirect()->back();
+                        break;
+                    }
 
-                // dd($param_d);
+                    $param_d = [
+                        'invoice_id'        => $insert_h->id,
+                        'category_id'       => $value,
+                        'product_name'      => $request->product_name[$key],
+                        'qty'               => $request->qty[$key],
+                        'selling_price'     => $request->selling_price[$key],
+                        'from_bank'         => $bank->id,
+                        'purchase_price'    => $request->purchase_price[$key],
+                        'note'              => $request->note[$key],
+                        'debt_to_vendors'   => $request->debt_to_vendors[$key],
+                        'total_price_sell'  => $request->total_price_sell[$key],
+                        'created_user'      => Auth::user()->id,
+                        'updated_user'      => Auth::user()->id
+                    ];
 
+                    calculate_bank_expense($bank, $request->purchase_price[$key], true);
+    
+                    $create = BankHistory::create([
+                        'bank_id'           => $bank->id,
+                        'transaction_name'  => $transaction_name,
+                        'invoice_id'        => $insert_h->id,
+                        'date'              => $request->date_publisher,
+                        'product_id'        => $value,
+                        'type'              => 'expense',
+                        'nominal'           => $request->purchase_price[$key],
+                        'note'              => $request->note[$key],
+                        'created_user'      => Auth::user()->id,
+                        'updated_user'      => Auth::user()->id
+                    ]);
+                } elseif ($source == 'deposit') {
+                    $deposit = Deposit::find($id);
+
+                    if ($request->purchase_price[$key] > $deposit->balance) {
+                        DB::rollBack();
+                        Alert::error('Error', 'Saldo Deposit Tidak Cukup. Balance : '.$deposit->balance);
+                        return redirect()->back();
+                        break;
+                    }
+
+
+                    $param_d = [
+                        'invoice_id'        => $insert_h->id,
+                        'category_id'       => $value,
+                        'product_name'      => $request->product_name[$key],
+                        'qty'               => $request->qty[$key],
+                        'selling_price'     => $request->selling_price[$key],
+                        'deposit_id'        => $deposit->id,
+                        'purchase_price'    => $request->purchase_price[$key],
+                        'note'              => $request->note[$key],
+                        'debt_to_vendors'   => $request->debt_to_vendors[$key],
+                        'total_price_sell'  => $request->total_price_sell[$key],
+                        'created_user'      => Auth::user()->id,
+                        'updated_user'      => Auth::user()->id
+                    ];
+
+                    calculate_deposit_expense($deposit, $request->purchase_price[$key], true);
+
+                    $create = DepositHistory::create([
+                        'deposit_id'        => $deposit->id,
+                        'transaction_name'  => $transaction_name,
+                        'invoice_id'        => $insert_h->id,
+                        'date'              => $request->date_publisher,
+                        'product_id'        => $value,
+                        'type'              => 'expense',
+                        'nominal'           => $request->purchase_price[$key],
+                        'note'              => $request->note[$key],
+                        'created_user'      => Auth::user()->id,
+                        'updated_user'      => Auth::user()->id
+                    ]);
+                }
+    
                 if ($request->debt_to_vendors[$key] !== null) {
                     $param_d['status_debt'] = 'Belum Lunas';
                 }
@@ -312,6 +381,7 @@ class InvoiceController extends Controller
                 $insert_d = InvoiceDetail::create($param_d);
 
                 $product = Product::find($value);
+
                 calculate_sell_product($product, $request->selling_price[$key]);
                 calculate_purchase_product($product, $request->selling_price[$key]);
                 calculate_profit_product($product);

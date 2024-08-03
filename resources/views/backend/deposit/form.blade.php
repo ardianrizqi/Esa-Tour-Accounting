@@ -46,7 +46,7 @@
     
 
                                 <div class="col-12 col-md-6">
-                                    <label for="select2Basic" class="form-label">Nominal</label><span style="color: red;">*</span>
+                                    <label for="select2Basic" class="form-label">Saldo Awal</label><span style="color: red;">*</span>
                                     <div class="input-group">
                                         <span class="input-group-text" id="basic-addon11">Rp.</span>
                                         <input id="beginning_balance" type="text" class="form-control" placeholder="" aria-label="" aria-describedby="basic-addon11"  name="beginning_balance" @isset($data) value="{{ $data->beginning_balance }}" @endisset required/>

@@ -21,6 +21,7 @@
                                 <th>Tanggal</th>
                                 <th>Dari Bank</th>
                                 <th>Nama Deposit</th>
+                                <th>Saldo Awal</th>
                                 <th>Pemasukan</th>
                                 <th>Pengeluaran</th>
                                 <th>Saldo</th>
