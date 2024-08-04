@@ -518,22 +518,26 @@ class InvoiceController extends Controller
                 ->get();
 
         foreach ($check as $key => $value) {
-            $bank = Bank::find($value->bank_id);
-            calculate_bank_income($bank, $value->nominal, true);
+            if ($value->status_cashback == 'Sudah Cair') {
+                $bank = Bank::find($value->bank_id);
+                calculate_bank_income($bank, $value->nominal, true);
+            }
             
             $value->delete();
         }
         // dd($check);
 
+        // dd($request);
         if ($request->nominal_cashback) {
             foreach ($request->nominal_cashback as $key => $value) {
                 // dd($value);
                 if ($value !== null) {
                     // dd('masok');
                     $bank = Bank::find($request->bank_id_cashback[$key]);
-                    // dd($bank);
-                    
-                    calculate_bank_income($bank, $value);
+                    // dd($value->status_cashback);
+                    if ($request->status_cashback == 'Sudah Cair') {
+                        calculate_bank_income($bank, $value);
+                    }
 
                     $note = '-';
     
@@ -553,7 +557,8 @@ class InvoiceController extends Controller
                         'nominal'           => $value,
                         'note'              => $note,
                         'created_user'      => Auth::user()->id,
-                        'updated_user'      => Auth::user()->id
+                        'updated_user'      => Auth::user()->id,
+                        'status_cashback'   => $request->status_cashback[$key]
                     ]);
 
                     // calculate_receivables($invoice, $value);

@@ -424,10 +424,14 @@
                                                         @endforeach
                                                     </select>
                                                 </div>
-    
-                                                <div class="col-md-3 mb-4">
-                                                    <label for="select2Basic" class="form-label">Keterangan</label>
-                                                    <textarea id="note_cashback" rows="1" class="form-control" name="note_cashback[]">{{ $item->note }}</textarea>
+
+                                                <div class="col-md-2 mb-4">
+                                                    <label @if($key == 0) for="status_cashback" @else for="status_cashback_"{{ $key }} @endif class="form-label">Status</label><span style="color: red;">*</span>
+                                                    <select @if($key == 0) id="status_cashback" @else id="status_cashback_"{{ $key }} @endif class="select2 form-select form-select-lg" data-allow-clear="true" name="status_cashback[]" required>
+                                                        <option>-- Pilih Status --</option>
+                                                        <option value="Sudah Cair">Sudah Cair</option>
+                                                        <option value="Belum Cair">Belum Cair</option>
+                                                    </select>
                                                 </div>
     
                                                 <div class="col-md-2 mb-4">
@@ -439,6 +443,12 @@
                                                             <option @if($item->bank_id == $item2->id) selected @endif value="{{ $item2->id }}">{{ $item2->bank_name }}</option>
                                                         @endforeach
                                                     </select>
+                                                </div>
+
+                                                    
+                                                <div class="col-md-6 mb-6">
+                                                    <label for="select2Basic" class="form-label">Keterangan</label>
+                                                    <textarea id="note_cashback" rows="3" class="form-control" name="note_cashback[]">{{ $item->note }}</textarea>
                                                 </div>
                                             </div> 
                                         @endforeach
@@ -467,10 +477,15 @@
                                                     @endforeach
                                                 </select>
                                             </div>
-    
-                                            <div class="col-md-3 mb-4">
-                                                <label for="select2Basic" class="form-label">Keterangan</label>
-                                                <textarea id="note_cashback" rows="1" class="form-control" name="note_cashback[]"></textarea>
+
+                                            
+                                            <div class="col-md-2 mb-4">
+                                                <label for="status_cashback" class="form-label">Status</label>
+                                                <select id="status_cashback" class="select2 form-select form-select-lg" data-allow-clear="true" name="status_cashback[]">
+                                                    <option>-- Pilih Status --</option>
+                                                    <option value="Sudah Cair">Sudah Cair</option>
+                                                    <option value="Belum Cair">Belum Cair</option>
+                                                </select>
                                             </div>
     
                                             <div class="col-md-2 mb-4">
@@ -482,6 +497,12 @@
                                                         <option value="{{ $item->id }}">{{ $item->bank_name }}</option>
                                                     @endforeach
                                                 </select>
+                                            </div>
+
+                                                
+                                            <div class="col-md-6 mb-6">
+                                                <label for="select2Basic" class="form-label">Keterangan</label>
+                                                <textarea id="note_cashback" rows="3" class="form-control" name="note_cashback[]"></textarea>
                                             </div>
                                         </div> 
                                     @endif

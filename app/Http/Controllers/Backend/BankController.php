@@ -138,8 +138,13 @@ class BankController extends Controller
     public function history_data(Request $request)
     {
         // dd($request);
-        $data = BankHistory::where('bank_id', $request->bank_id);
+        $data = BankHistory::where('bank_id', $request->bank_id)
+                ->where(function ($query) {
+                    $query->where('status_cashback', '!=', 'Belum Cair')
+                        ->orWhere('status_cashback', null);
+                });
 
+        // dd($data->get());
         if ($request->date) {
             $data->whereDate('date', $request->date);
         }
