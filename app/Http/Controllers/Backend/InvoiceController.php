@@ -144,7 +144,8 @@ class InvoiceController extends Controller
                 'created_user'          => Auth::user()->id,
                 'updated_user'          => Auth::user()->id,
                 'receivables'           => $request->price_total_selling,
-                'due_date'              => $request->due_date
+                'due_date'              => $request->due_date,
+                'is_printed'            => $request->physical_invoice_id == 1 ? true : false
             ];
 
             if ($request->invoice_id) {
@@ -285,8 +286,12 @@ class InvoiceController extends Controller
             }
 
             // dd($request);
+            $is_debt_to_vendor = false;
+
+            
             foreach ($request->category_id as $key => $value) {
                 $fromBank = $request->from_bank[$key];
+                // dd($fromBank);
                 [$source, $id] = explode('-', $fromBank);
         
                 $transaction_name = 'Invoice dari '.$insert_h->invoice_number. ' Ket: '.$request->note[$key];
@@ -374,6 +379,11 @@ class InvoiceController extends Controller
     
                 if ($request->debt_to_vendors[$key] !== null) {
                     $param_d['status_debt'] = 'Belum Lunas';
+                }else{
+                    $param_d['status_debt'] = 'Sudah Lunas';
+                    $insert_h->update([
+                        'status_debt'   => 'Sudah Lunas'
+                    ]);
                 }
                 // dd($param_d);
 
@@ -538,14 +548,15 @@ class InvoiceController extends Controller
                     if ($request->status_cashback == 'Sudah Cair') {
                         calculate_bank_income($bank, $value);
                     }
-
+                    
                     $note = '-';
-    
+                    
                     if ($request->note_cashback[$key] !== null) {
                         $note = $request->note_cashback[$key];
                     }
-    
+                    
                     $transaction_name = 'Cashback Customer dari '.$invoice->invoice_number. ' Ket: '.$note;
+                    // dd($request);
     
                     $create = BankHistory::create([
                         'bank_id'           => $request->bank_id_cashback[$key],
@@ -560,11 +571,13 @@ class InvoiceController extends Controller
                         'updated_user'      => Auth::user()->id,
                         'status_cashback'   => $request->status_cashback[$key]
                     ]);
-
+                   
                     // calculate_receivables($invoice, $value);
                 }
             }
         }
+
+        // dd('masok');
     }
 
     public function store_tax($id, $request)
@@ -683,15 +696,23 @@ class InvoiceController extends Controller
                         calculate_receivables($invoice, $value);
                     }
                 }
+
+                if ($invoice->receivables <= 0) {
+                    $invoice->update([
+                        'status_receivables' => 'Sudah Lunas'
+                    ]);
+                }
+                // dd('masok');
             }
 
             # hutang vendor
             // dd($request);
 
             if ($request->inv_debt_id) {
+                $status_payment = true;
+                
                 foreach ($request->inv_debt_id as $key => $value) {
                     $invoice_d = InvoiceDetail::find($value);
-                    $status_payment = true;
     
                     if ($invoice_d->status_debt !== 'Sudah Lunas') {
                         if ($request->payment_date[$key] !== null) {
@@ -729,27 +750,31 @@ class InvoiceController extends Controller
                                 'updated_user'      => Auth::user()->id
                             ]);
                         }
+                    }else{
+                        $status_payment = true;
                     }
                 
     
-                    // if ($invoice_d->status_debt == 'Belum Lunas') {
-                    //     $status_payment = false;
-                    // }
+                    if ($invoice_d->status_debt == 'Belum Lunas') {
+                        $status_payment = false;
+                    }
                 }
+                
             }
           
            
-            // if ($status_payment) {
-            //     $invoice->update([
-            //         'status'    => 'Sudah Lunas'
-            //     ]);
-            // }
+            if ($status_payment) {
+                $invoice->update([
+                    'status_debt'    => 'Sudah Lunas'
+                ]);
+            }
 
             # refund
             $this->store_refund($id, $request);
-
+            
             # cashback
             $this->store_cashback($id, $request);
+            // dd('masok');
 
             # tax
             $this->store_tax($id, $request);

@@ -31,6 +31,8 @@
                                 <th>NTA</th> --}}
                                 {{-- <th>Dari Bank</th> --}}
                                 <th>Status Cetak</th>
+                                <th>Status Invoice</th>
+                                <th>Status Piutang</th>
                                 <th>Status Hutang</th>
                                 <th>Action</th>
                             </tr>

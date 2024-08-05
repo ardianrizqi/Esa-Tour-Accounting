@@ -104,12 +104,16 @@
                                                 </div>
                 
                                                 <div class="col-md-2 mb-4">
-                                                    <label @if($key == 0) for="from_bank" @else for="from_bank_"{{ $key }} @endif class="form-label">Dari Bank</label><span style="color: red;">*</span>
+                                                    <label @if($key == 0) for="from_bank" @else for="from_bank_"{{ $key }} @endif class="form-label">Sumber Dana</label><span style="color: red;">*</span>
                                                     <select @if($key == 0) id="from_bank" @else id="from_bank_"{{ $key }} @endif class="select2 form-select form-select-lg" data-allow-clear="true" name="from_bank[]" required>
-                                                        <option>-- Pilih Bank --</option>
-                
+                                                        <option>-- Pilih Sumber --</option>
+
                                                         @foreach ($bank as $item)                                           
-                                                            <option @if($value->from_bank == $item->id) selected @endif value="{{ $item->id }}">{{ $item->bank_name }}</option>
+                                                            <option @if($value->from_bank == $item->id) selected @endif value="bank-{{ $item->id }}"  data-source="bank">{{ $item->bank_name }}</option>
+                                                        @endforeach
+
+                                                        @foreach ($deposit as $item)                                           
+                                                            <option @if($value->deposit_id == $item->id) selected @endif value="deposit-{{ $item->id }}" data-source="deposit">{{ $item->name }}</option>
                                                         @endforeach
                                                     </select>
                                                 </div>
@@ -186,7 +190,7 @@
                                             <div class="col-md-2 mb-4">
                                                 <label for="from_bank" class="form-label">Sumber Dana</label><span style="color: red;">*</span>
                                                 <select id="from_bank" class="select2 form-select form-select-lg" data-allow-clear="true" name="from_bank[]" required>
-                                                    <option>-- Pilih Bank --</option>
+                                                    <option>-- Pilih Sumber --</option>
             
                                                     @foreach ($bank as $item)                                           
                                                         <option value="bank-{{ $item->id }}" data-source="bank">{{ $item->bank_name }}</option>

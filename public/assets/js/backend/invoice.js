@@ -43,7 +43,29 @@ $(function () {
                 {
                     data: null,
                     render: function (data, type, row, meta) {
-                        if (data.status == 'Belum Lunas') {
+                        if (data.status == 'Aktif') {
+                            return '<button class="btn btn-sm btn-success">Aktif</button>';
+                        }else{
+                            return '<button class="btn btn-sm btn-danger">Void</button>';
+                        }
+                    },
+                    orderable: false
+                },
+                {
+                    data: null,
+                    render: function (data, type, row, meta) {
+                        if (data.status_receivables == 'Belum Lunas') {
+                            return '<button class="btn btn-sm btn-danger">Belum Lunas</button>';
+                        }else{
+                            return '<button class="btn btn-sm btn-success">Sudah Lunas</button>';
+                        }
+                    },
+                    orderable: false
+                },
+                {
+                    data: null,
+                    render: function (data, type, row, meta) {
+                        if (data.status_debt == 'Belum Lunas') {
                             return '<button class="btn btn-sm btn-danger">Belum Lunas</button>';
                         }else{
                             return '<button class="btn btn-sm btn-success">Sudah Lunas</button>';
@@ -56,9 +78,10 @@ $(function () {
                 { responsivePriority: 1, targets: 1 },
                 { responsivePriority: 2, targets: 2 },
                 { responsivePriority: 3, targets: 3 },
+                { responsivePriority: 4, targets: 4 },
                 {
                     // Actions
-                    targets: 6,
+                    targets: 8,
                     title: 'Actions',
                     orderable: false,
                     searchable: false,
