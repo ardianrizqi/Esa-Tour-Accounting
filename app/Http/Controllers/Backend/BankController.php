@@ -61,20 +61,21 @@ class BankController extends Controller
         $nominal = preg_replace('/[^0-9]/', '', $nominal);
 
         try {
-            if ($request->product_id) {
+            if ($request->bank_id) {
+                $data = Bank::find($request->bank_id);
+
                 $requestData = array_merge($request->all(), [
-                    'updated_user'  => Auth::user()->id,
-                    'balance'       => $nominal,
+                    'updated_user'      => Auth::user()->id,
+                    'balance'           => ($data->income + $nominal) - $data->expense,
                     'beginning_balance' => $nominal
                 ]);
-
-                $data = Bank::find($request->bank_id);
+                // calculate_bank_income($data, $nominal);
                 $data->update($requestData);
             }else{
                 $requestData = array_merge($request->all(), [
-                    'created_user'  => Auth::user()->id,
-                    'updated_user'  => Auth::user()->id,
-                    'balance'       => $nominal,
+                    'created_user'      => Auth::user()->id,
+                    'updated_user'      => Auth::user()->id,
+                    'balance'           => $nominal,
                     'beginning_balance' => $nominal
                 ]);
 

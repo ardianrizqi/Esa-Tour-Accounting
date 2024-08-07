@@ -15,12 +15,12 @@ $(function () {
                     orderable: false
                 },
                 { data: 'date' },
-                {
-                    data: 'bank',
-                    render: function (data, type, row) {
-                        return data['bank_name'];
-                    }
-                },
+                // {
+                //     data: 'bank',
+                //     render: function (data, type, row) {
+                //         return data['bank_name'];
+                //     }
+                // },
                 { data: 'name' },
                 {
                     data: 'beginning_balance',
@@ -55,12 +55,13 @@ $(function () {
                 { responsivePriority: 4, targets: 4 },
                 {
                     // Actions
-                    targets: 8,
+                    targets: 7,
                     title: 'Actions',
                     orderable: false,
                     searchable: false,
                     render: function (data, type, full, meta) {
                       return (
+                        '<a href="deposit/history/'+ full.id + '" class="btn btn-sm btn-icon item-edit"><i class="text-primary ti ti-eye"></i></a>'+
                         '<a href="deposit/edit/'+ full.id + '" class="btn btn-sm btn-icon item-edit"><i class="text-primary ti ti-pencil"></i></a>'+
                         '<a href="javascript:;" class="btn btn-sm btn-icon item-delete"><i class="text-primary ti ti-trash"></i></a>'
                       );

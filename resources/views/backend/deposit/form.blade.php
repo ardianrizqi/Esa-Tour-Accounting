@@ -18,14 +18,14 @@
                                 <input type="hidden" id="deposit_id" name="deposit_id" @isset($data) value="{{ $data->id }}"
                                     @endisset>
 
-                                <div class="col-12 col-md-6">
+                                {{-- <div class="col-12 col-md-6">
                                     <label class="form-label" for="modalEditUserFirstName">Tanggal</label><span
                                         style="color: red;"> *</span>
                                     <input type="date" id="date" name="date" class="form-control"
                                         required @isset($data) value="{{ $data->date }}" @endisset />
-                                </div>
+                                </div> --}}
 
-                                <div class="col-12 col-md-6">
+                                {{-- <div class="col-12 col-md-6">
                                     <label class="form-label" for="account_id">Dari bank</label><span style="color: red;">*</span>
                                     <select id="bank_id" name="bank_id" class="select2 form-select"
                                         aria-label="Default select example" required>
@@ -35,7 +35,7 @@
                                             <option @isset($data) @if($item->id == $data->bank_id) selected @endif @endisset value="{{ $item->id }}" >{{ $item->bank_name }}</option>
                                         @endforeach
                                     </select>
-                                </div>
+                                </div> --}}
 
                                 <div class="col-12 col-md-6">
                                     <label class="form-label" for="modalEditUserFirstName">Nama Deposit</label><span
@@ -51,6 +51,11 @@
                                         <span class="input-group-text" id="basic-addon11">Rp.</span>
                                         <input id="beginning_balance" type="text" class="form-control" placeholder="" aria-label="" aria-describedby="basic-addon11"  name="beginning_balance" @isset($data) value="{{ $data->beginning_balance }}" @endisset required/>
                                     </div>
+                                </div>
+
+                                <div class="col-12 col-md-6">
+                                    <label for="select2Basic" class="form-label">Keterangan</label>
+                                    <textarea id="floatingInput" rows="4" class="form-control" name="note">@isset($data) {{ $data->note }} @endisset</textarea>
                                 </div>
 
                                 <div class="col-12" style="display: flex; justify-content: flex-end; margin-top: 5%;">

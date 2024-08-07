@@ -103,6 +103,8 @@ Route::middleware('auth')->group(function () {
             Route::get('/create', 'DepositController@form')->name('deposit.create');
             Route::post('/store', 'DepositController@store')->name('deposit.store');
             Route::get('/edit/{id}', 'DepositController@form')->name('deposit.edit');
+            Route::get('/history/data', 'DepositController@history_data')->name('deposit.history_data');
+            Route::get('/history/{id}', 'DepositController@history')->name('deposit.history');
             Route::delete('/destroy/{id}', 'DepositController@destroy')->name('deposit.destroy');
         });
 
