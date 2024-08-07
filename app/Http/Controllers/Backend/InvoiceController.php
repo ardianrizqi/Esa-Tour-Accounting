@@ -379,6 +379,9 @@ class InvoiceController extends Controller
     
                 if ($request->debt_to_vendors[$key] !== null) {
                     $param_d['status_debt'] = 'Belum Lunas';
+                    $insert_h->update([
+                        'status_debt'   => 'Belum Lunas'
+                    ]);
                 }else{
                     $param_d['status_debt'] = 'Sudah Lunas';
                     $insert_h->update([

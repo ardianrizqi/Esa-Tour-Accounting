@@ -88,7 +88,13 @@
                                                 <td>{{ $item->note }}</td>
                                                 <td>Rp. {{ number_format($item->total_price_sell) }}</td>
                                                 <td>Rp. {{ number_format($item->qty * $item->purchase_price) }}</td>
-                                                <td>{{ $item->bank->bank_name }}</td>
+                                                <td>
+                                                    @if (isset($item->bank))
+                                                        {{ $item->bank->bank_name }}
+                                                    @else 
+                                                        -
+                                                    @endif
+                                                </td>
                                             </tr>
                                         @endforeach
                                     </tbody>
