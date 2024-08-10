@@ -18,6 +18,7 @@ Route::middleware('auth')->group(function () {
             Route::get('/data', 'InvoiceController@data')->name('invoice.data');
             Route::get('/create', 'InvoiceController@form')->name('invoice.create');
             Route::get('/edit/{id}', 'InvoiceController@form')->name('invoice.edit');
+            Route::delete('/destroy/{id}', 'InvoiceController@destroy')->name('invoice.destroy');
             Route::post('/store', 'InvoiceController@store')->name('invoice.store');
             Route::get('/show/{id}', 'InvoiceController@show')->name('invoice.show');
             Route::post('/update-detail/{id}', 'InvoiceController@update_details')->name('invoice.update_details');

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Backend;
 
 use App\Http\Controllers\Controller;
 use App\Models\Bank;
+use App\Models\BankHistory;
 use App\Models\CategoryExpense;
 use App\Models\Expense;
 use Illuminate\Http\Request;
@@ -56,20 +57,66 @@ class ExpenseController extends Controller
         DB::beginTransaction();
 
         try {
+            $nominal = format_nominal($request->nominal);
+            $bank = Bank::find($request->bank_id);
+
+            if ($nominal > $bank->balance) {
+                DB::rollBack();
+                Alert::error('Error', 'Gagal Menyimpan Data, Saldo Bank Rp. '.number_format($bank->balance, 2));
+                return redirect()->back();
+            }
+
+
             if ($request->expense_id) {
+                $bank_h = BankHistory::where('expense_id', $request->expense_id)->first();
+                calculate_bank_expense($bank, $bank_h->nominal);
+
+
                 $requestData = array_merge($request->all(), [
                     'updated_user'  => Auth::user()->id,
+                    'nominal'       => $nominal
                 ]);
 
                 $data = Expense::find($request->bank_id);
+                $trans_name = 'Edit Pengeluaran '. $request->name .'Nominal Awal Rp. '. number_format($bank_h->nominal, 2) .' Menjadi Rp. '.number_format($nominal, 2). ' Ket: '.$request->note;
+
                 $data->update($requestData);
+
+                calculate_bank_expense($bank, $nominal, true);
+
+                $bank_h->update([
+                    'bank_id'           => $request->bank_id,
+                    'transaction_name'  => $trans_name,
+                    'date'              => $request->date,
+                    'type'              => 'expense',
+                    'nominal'           => $nominal,
+                    'note'              => $request->note,
+                    'updated_user'      => Auth::user()->id
+                ]);
             }else{
+                calculate_bank_expense($bank, $nominal, true);
+
                 $requestData = array_merge($request->all(), [
                     'created_user'  => Auth::user()->id,
                     'updated_user'  => Auth::user()->id,
+                    'nominal'       => $nominal
                 ]);
 
                 $data = Expense::create($requestData);
+
+                $trans_name = 'Pengeluaran '. $request->name .' Sebesar Rp. '.number_format($nominal, 2). ' Ket: '.$request->note;
+
+                $create = BankHistory::create([
+                    'bank_id'           => $request->bank_id,
+                    'transaction_name'  => $trans_name,
+                    'expense_id'        => $data->id,
+                    'date'              => $request->date,
+                    'type'              => 'expense',
+                    'nominal'           => $nominal,
+                    'note'              => $request->note,
+                    'created_user'      => Auth::user()->id,
+                    'updated_user'      => Auth::user()->id
+                ]);
             }
 
             DB::commit();

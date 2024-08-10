@@ -47,7 +47,7 @@
 @push('js')
     <script src="{{ asset('assets/js/backend/invoice.js?updated=121331') }}"></script>
     <script>
-        var deleteUrl = '{{ route("backend.product.destroy", ":id") }}';
+        var deleteUrl = '{{ route("backend.invoice.destroy", ":id") }}';
     </script>
 @endpush
 

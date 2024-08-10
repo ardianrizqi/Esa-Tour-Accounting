@@ -119,3 +119,12 @@ function calculate_deposit_expense($data, $nominal, $is_increase = false)
 
     return $data;
 }
+
+function format_nominal($nominal)
+{
+    $nominal = str_replace('.', '', $nominal);
+    $nominal = str_replace(',', '', $nominal);
+    $nominal = preg_replace('/[^0-9]/', '', $nominal);
+    
+    return $nominal;
+}

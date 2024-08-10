@@ -125,7 +125,7 @@ $(function () {
         });
 
         
-        $('#product-table').on('click', '.item-delete', function () {
+        $('#invoice-table').on('click', '.item-delete', function () {
             var row = $(this).closest('tr');
             var data = dt_basic.row(row).data();
             // console.log(data.id);

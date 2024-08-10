@@ -52,7 +52,7 @@
                                     <label for="select2Basic" class="form-label">Nominal</label><span style="color: red;">*</span>
                                     <div class="input-group">
                                         <span class="input-group-text" id="basic-addon11">Rp.</span>
-                                        <input id="nominal" type="text" class="form-control" placeholder="" aria-label="" aria-describedby="basic-addon11"  name="nominal" @isset($data) value="{{ $data->nominal }}" @endisset required/>
+                                        <input id="nominal" type="text" class="form-control nominal" placeholder="" aria-label="" aria-describedby="basic-addon11"  name="nominal" @isset($data) value="{{ $data->nominal }}" @endisset required/>
                                     </div>
                                 </div>
 
@@ -166,6 +166,29 @@
                     
                     }
                 });
+            });
+
+            function formatCurrency(value, prefix = "Rp. ") {
+                // console.log(value);
+                var number_string = value.replace(/[^,\d]/g, '').toString(),
+                    split = number_string.split(','),
+                    remainder = split[0].length % 3,
+                    rupiah = split[0].substr(0, remainder),
+                    thousand = split[0].substr(remainder).match(/\d{3}/gi);
+
+                if (thousand) {
+                    separator = remainder ? '.' : '';
+                    rupiah += separator + thousand.join('.');
+                }
+
+                rupiah = split[1] != undefined ? rupiah + ',' + split[1] : rupiah;
+                return rupiah;
+            }
+
+        
+            $('#nominal').on('keyup', function() {
+                var formattedValue = formatCurrency(this.value);
+                $(this).val(formattedValue);
             });
         });
 

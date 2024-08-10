@@ -291,7 +291,7 @@
                                                 <label for="select2Basic" class="form-label">Nominal</label>
                                                 <div class="input-group">
                                                     <span class="input-group-text" id="basic-addon11">Rp.</span>
-                                                    <input id="nominal_refund" type="text" class="form-control nominal" placeholder="" aria-label="" aria-describedby="basic-addon11"  name="nominal_refund[]" value="{{ $item->nominal }}"/>
+                                                    <input id="nominal_refund" type="text" class="form-control nominal_refund" placeholder="" aria-label="" aria-describedby="basic-addon11"  name="nominal_refund[]" value="{{ $item->nominal }}" oninput="format_refund(this)"/>
                                                 </div>
                                             </div>
 
@@ -334,7 +334,7 @@
                                             <label for="select2Basic" class="form-label">Nominal</label>
                                             <div class="input-group">
                                                 <span class="input-group-text" id="basic-addon11">Rp.</span>
-                                                <input id="nominal_refund" type="text" class="form-control nominal" placeholder="" aria-label="" aria-describedby="basic-addon11"  name="nominal_refund[]"/>
+                                                <input id="nominal_refund" type="text" class="form-control nominal_refund" placeholder="" aria-label="" aria-describedby="basic-addon11"  name="nominal_refund[]" oninput="format_refund(this)"/>
                                             </div>
                                         </div>
 
@@ -397,7 +397,7 @@
                                                 <label for="select2Basic" class="form-label">Nominal</label>
                                                 <div class="input-group">
                                                     <span class="input-group-text" id="basic-addon11">Rp.</span>
-                                                    <input id="nominal_cashback" type="text" class="form-control nominal" placeholder="" aria-label="" aria-describedby="basic-addon11"  name="nominal_cashback[]" value="{{ $item->nominal }}"/>
+                                                    <input id="nominal_cashback" type="text" class="form-control nominal_cashback" placeholder="" aria-label="" aria-describedby="basic-addon11"  name="nominal_cashback[]" value="{{ $item->nominal }}" oninput="format_cashback(this)"/>
                                                 </div>
                                             </div>
 
@@ -421,8 +421,8 @@
                                                 <label @if($key == 0) for="status_cashback" @else for="status_cashback_"{{ $key }} @endif class="form-label">Status</label><span style="color: red;">*</span>
                                                 <select @if($key == 0) id="status_cashback" @else id="status_cashback_"{{ $key }} @endif class="select2 form-select form-select-lg" data-allow-clear="true" name="status_cashback[]" required>
                                                     <option>-- Pilih Status --</option>
-                                                    <option value="Sudah Cair">Sudah Cair</option>
-                                                    <option value="Belum Cair">Belum Cair</option>
+                                                    <option @if($item->status_cashback == 'Sudah Cair') selected @endif value="Sudah Cair">Sudah Cair</option>
+                                                    <option @if($item->status_cashback == 'Belum Cair') selected @endif value="Belum Cair">Belum Cair</option>
                                                 </select>
                                             </div>
 
@@ -450,7 +450,7 @@
                                             <label for="select2Basic" class="form-label">Nominal</label>
                                             <div class="input-group">
                                                 <span class="input-group-text" id="basic-addon11">Rp.</span>
-                                                <input id="nominal_cashback" type="text" class="form-control nominal" placeholder="" aria-label="" aria-describedby="basic-addon11"  name="nominal_cashback[]"/>
+                                                <input id="nominal_cashback" type="text" class="form-control nominal_cashback" placeholder="" aria-label="" aria-describedby="basic-addon11"  name="nominal_cashback[]" oninput="format_cashback(this)"/>
                                             </div>
                                         </div>
 
@@ -523,7 +523,7 @@
                                                 <label for="select2Basic" class="form-label">Nominal</label>
                                                 <div class="input-group">
                                                     <span class="input-group-text" id="basic-addon11">Rp.</span>
-                                                    <input id="nominal_tax" type="text" class="form-control nominal" placeholder="" aria-label="" aria-describedby="basic-addon11"  name="nominal_tax[]" value="{{ $item->nominal }}"/>
+                                                    <input id="nominal_tax" type="text" class="form-control nominal_tax" placeholder="" aria-label="" aria-describedby="basic-addon11"  name="nominal_tax[]" value="{{ $item->nominal }}" oninput="format_tax(this)"/>
                                                 </div>
                                             </div>
 
@@ -560,7 +560,7 @@
                                             <label for="select2Basic" class="form-label">Nominal</label>
                                             <div class="input-group">
                                                 <span class="input-group-text" id="basic-addon11">Rp.</span>
-                                                <input id="nominal_tax" type="text" class="form-control nominal" placeholder="" aria-label="" aria-describedby="basic-addon11"  name="nominal_tax[]"/>
+                                                <input id="nominal_tax" type="text" class="form-control nominal_tax" placeholder="" aria-label="" aria-describedby="basic-addon11"  name="nominal_tax[]" oninput="format_tax(this)"/>
                                             </div>
                                         </div>
 
@@ -637,9 +637,13 @@
 
                 // total_receivables = Number(receivables_price) - Number(nominal);
                 total_nominal += Number(nominal);
+
+                var formattedValue = formatCurrency($(this).find('.nominal').val());
+                $(this).find('.nominal').val(formattedValue);
             });
 
             total_receivables = Number(receivables_price) - Number(total_nominal);
+     
             // console.log(total_nominal);
             $('#receivables_label').text("Total Piutang Rp. " + total_receivables.toLocaleString());
         }
@@ -816,5 +820,66 @@
         $(document).on('click', '.removeRowBtnTax', function() {
             $(this).closest('.tax-row').remove();
         });
+
+        function formatCurrency(value, prefix = "Rp. ") {
+            // console.log(value);
+            var number_string = value.replace(/[^,\d]/g, '').toString(),
+                split = number_string.split(','),
+                remainder = split[0].length % 3,
+                rupiah = split[0].substr(0, remainder),
+                thousand = split[0].substr(remainder).match(/\d{3}/gi);
+
+            if (thousand) {
+                separator = remainder ? '.' : '';
+                rupiah += separator + thousand.join('.');
+            }
+
+            rupiah = split[1] != undefined ? rupiah + ',' + split[1] : rupiah;
+            return rupiah;
+        }
+
+        function formatCurrency(value, prefix = "Rp. ") {
+            // console.log(value);
+            var number_string = value.replace(/[^,\d]/g, '').toString(),
+                split = number_string.split(','),
+                remainder = split[0].length % 3,
+                rupiah = split[0].substr(0, remainder),
+                thousand = split[0].substr(remainder).match(/\d{3}/gi);
+
+            if (thousand) {
+                separator = remainder ? '.' : '';
+                rupiah += separator + thousand.join('.');
+            }
+
+            rupiah = split[1] != undefined ? rupiah + ',' + split[1] : rupiah;
+            return rupiah;
+        }
+
+        function format_refund(inputElement)
+        {
+            var row = $(inputElement).closest('.refund-row');
+            var nominal = row.find('.nominal_refund');
+
+            var formattedValue = formatCurrency(nominal.val());
+            nominal.val(formattedValue);
+        }
+
+        function format_cashback(inputElement)
+        {
+            var row = $(inputElement).closest('.cashback-row');
+            var nominal = row.find('.nominal_cashback');
+
+            var formattedValue = formatCurrency(nominal.val());
+            nominal.val(formattedValue);
+        }
+
+        function format_tax(inputElement)
+        {
+            var row = $(inputElement).closest('.tax-row');
+            var nominal = row.find('.nominal_tax');
+
+            var formattedValue = formatCurrency(nominal.val());
+            nominal.val(formattedValue);
+        }
     </script>
 @endpush
