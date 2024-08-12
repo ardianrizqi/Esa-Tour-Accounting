@@ -18,14 +18,14 @@
                                 <input type="hidden" id="tax_id" name="tax_id" @isset($data) value="{{ $data->id }}"
                                     @endisset>
 
-                                <div class="col-12 col-md-6">
+                                <div class="col-12 col-md-4">
                                     <label class="form-label" for="modalEditUserFirstName">Tanggal</label><span
                                         style="color: red;"> *</span>
                                     <input type="date" id="date" name="date" class="form-control"
                                         required @isset($data) value="{{ $data->date }}" @endisset />
                                 </div>
 
-                                <div class="col-12 col-md-6">
+                                <div class="col-12 col-md-4">
                                     <label class="form-label" for="account_id">Dari Invoice</label><span style="color: red;">*</span>
                                     <select id="invoice_id" name="invoice_id" class="select2 form-select"
                                         aria-label="Default select example" required>
@@ -37,19 +37,30 @@
                                     </select>
                                 </div>
 
-                                <div class="col-12 col-md-6">
+                                <div class="col-12 col-md-4">
                                     <label class="form-label" for="modalEditUserFirstName">Nama Pajak</label><span
                                         style="color: red;"> *</span>
                                     <input type="text" id="name" name="name" class="form-control"
                                         placeholder="Ketik Nama Pajak" required @isset($data) value="{{ $data->name }}" @endisset/>
                                 </div>
     
+                                <div class="col-12 col-md-4">
+                                    <label class="form-label" for="account_id">Bank</label><span style="color: red;">*</span>
+                                    <select id="bank_id" name="bank_id" class="select2 form-select"
+                                        aria-label="Default select example" required>
+                                        <option>-- Pilih Bank --</option>
 
-                                <div class="col-12 col-md-6">
+                                        @foreach($banks as $item)
+                                            <option @isset($data) @if($item->id == $data->bank_id) selected @endif @endisset value="{{ $item->id }}" >{{ $item->bank_name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+
+                                <div class="col-12 col-md-4">
                                     <label for="select2Basic" class="form-label">Nominal</label><span style="color: red;">*</span>
                                     <div class="input-group">
                                         <span class="input-group-text" id="basic-addon11">Rp.</span>
-                                        <input id="nominal" type="text" class="form-control" placeholder="" aria-label="" aria-describedby="basic-addon11"  name="nominal" @isset($data) value="{{ $data->nominal }}" @endisset required/>
+                                        <input id="nominal" type="text" class="form-control nominal" placeholder="" aria-label="" aria-describedby="basic-addon11"  name="nominal" @isset($data) value="{{ $data->nominal }}" @endisset required/>
                                     </div>
                                 </div>
 
@@ -145,6 +156,27 @@
                     
                     }
                 });
+            });
+
+            function formatCurrency(value, prefix = "Rp. ") {
+                var number_string = value.replace(/[^,\d]/g, '').toString(),
+                    split = number_string.split(','),
+                    remainder = split[0].length % 3,
+                    rupiah = split[0].substr(0, remainder),
+                    thousand = split[0].substr(remainder).match(/\d{3}/gi);
+
+                if (thousand) {
+                    separator = remainder ? '.' : '';
+                    rupiah += separator + thousand.join('.');
+                }
+
+                rupiah = split[1] != undefined ? rupiah + ',' + split[1] : rupiah;
+                return rupiah;
+            }
+
+            $('#nominal').on('keyup', function() {
+                var formattedValue = formatCurrency(this.value);
+                $(this).val(formattedValue);
             });
         });
 

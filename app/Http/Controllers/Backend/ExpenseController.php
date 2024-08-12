@@ -58,6 +58,7 @@ class ExpenseController extends Controller
 
         try {
             $nominal = format_nominal($request->nominal);
+            // dd($nominal);
             $bank = Bank::find($request->bank_id);
 
             if ($nominal > $bank->balance) {
@@ -69,30 +70,53 @@ class ExpenseController extends Controller
 
             if ($request->expense_id) {
                 $bank_h = BankHistory::where('expense_id', $request->expense_id)->first();
-                calculate_bank_expense($bank, $bank_h->nominal);
 
+                if ($bank_h) {
+                    calculate_bank_expense($bank, $bank_h->nominal);
+                }
 
+             
                 $requestData = array_merge($request->all(), [
                     'updated_user'  => Auth::user()->id,
                     'nominal'       => $nominal
                 ]);
 
-                $data = Expense::find($request->bank_id);
-                $trans_name = 'Edit Pengeluaran '. $request->name .'Nominal Awal Rp. '. number_format($bank_h->nominal, 2) .' Menjadi Rp. '.number_format($nominal, 2). ' Ket: '.$request->note;
+                $data = Expense::find($request->expense_id);
+                // dd($data);
+               
 
                 $data->update($requestData);
 
                 calculate_bank_expense($bank, $nominal, true);
 
-                $bank_h->update([
-                    'bank_id'           => $request->bank_id,
-                    'transaction_name'  => $trans_name,
-                    'date'              => $request->date,
-                    'type'              => 'expense',
-                    'nominal'           => $nominal,
-                    'note'              => $request->note,
-                    'updated_user'      => Auth::user()->id
-                ]);
+                if ($bank_h) {
+                    $trans_name = 'Edit Pengeluaran '. $request->name .'Nominal Awal Rp. '. number_format($bank_h->nominal, 2) .' Menjadi Rp. '.number_format($nominal, 2). ' Ket: '.$request->note;
+
+                    $bank_h->update([
+                        'bank_id'           => $request->bank_id,
+                        'transaction_name'  => $trans_name,
+                        'date'              => $request->date,
+                        'type'              => 'expense',
+                        'nominal'           => $nominal,
+                        'note'              => $request->note,
+                        'updated_user'      => Auth::user()->id
+                    ]);
+                }else{
+                    $trans_name = 'Pengeluaran '. $request->name .' Sebesar Rp. '.number_format($nominal, 2). ' Ket: '.$request->note;
+
+                    $create = BankHistory::create([
+                        'bank_id'           => $request->bank_id,
+                        'transaction_name'  => $trans_name,
+                        'expense_id'        => $data->id,
+                        'date'              => $request->date,
+                        'type'              => 'expense',
+                        'nominal'           => $nominal,
+                        'note'              => $request->note,
+                        'created_user'      => Auth::user()->id,
+                        'updated_user'      => Auth::user()->id
+                    ]);
+                }
+            
             }else{
                 calculate_bank_expense($bank, $nominal, true);
 
@@ -125,7 +149,7 @@ class ExpenseController extends Controller
             Alert::success('Sukses', 'Berhasil Menyimpan Data');
             return redirect()->route('backend.expense.index');
         } catch (\Throwable $th) {
-            // dd($th->getMessage());
+            dd($th->getMessage());
             DB::rollBack();
 
             Alert::error('Gagal', 'Terjadi Kesalahan Pada Server, Coba Lagi Kembali');

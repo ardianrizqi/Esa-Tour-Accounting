@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Backend;
 
 use App\Http\Controllers\Controller;
+use App\Models\Bank;
+use App\Models\BankHistory;
 use App\Models\Invoice;
 use App\Models\Tax;
 use Illuminate\Http\Request;
@@ -38,13 +40,14 @@ class TaxController extends Controller
         $data       = null;
         $title      = $this->title;
         $action     = 'Tambah';
-        $invoice   = Invoice::all();
+        $invoice    = Invoice::all();
+        $banks      = Bank::all();
 
         if ($id) {
             $data = Tax::find($id);
         }
                 
-        return view('backend.tax.form', compact('title', 'action', 'data', 'invoice'));
+        return view('backend.tax.form', compact('title', 'action', 'data', 'invoice', 'banks'));
     }
 
     public function store(Request $request)
@@ -52,20 +55,76 @@ class TaxController extends Controller
         DB::beginTransaction();
 
         try {
+            $nominal    = format_nominal($request->nominal);
+            $bank       = Bank::find($request->bank_id);
+            $invoice    = Invoice::find($request->invoice_id);
+            // dd($bank);
+
             if ($request->tax_id) {
+                $bank_h = BankHistory::where('tax_id', $request->tax_id)->first();
+
+                if ($bank_h) {
+                    calculate_bank_expense($bank, $bank_h->nominal);
+                }
+                
                 $requestData = array_merge($request->all(), [
                     'updated_user'  => Auth::user()->id,
+                    'nominal'       => $nominal
                 ]);
 
                 $data = Tax::find($request->tax_id);
                 $data->update($requestData);
+
+                calculate_bank_expense($bank, $nominal, true);
+
+                if ($bank_h) {
+                    $trans_name = 'Edit Pajak & Biaya dari '. $invoice->invoice_number .'Nominal Awal Rp. '. number_format($bank_h->nominal, 2) .' Menjadi Rp. '.number_format($nominal, 2);
+
+                    $bank_h->update([
+                        'bank_id'           => $request->bank_id,
+                        'transaction_name'  => $trans_name,
+                        'date'              => $request->date,
+                        'type'              => 'expense',
+                        'nominal'           => $nominal,
+                        'note'              => $request->note,
+                        'updated_user'      => Auth::user()->id
+                    ]);
+                }else{
+                    $transaction_name = 'Pajak & Biaya dari '.$invoice->invoice_number. 'Sebesar Rp. '.$nominal;
+                    
+                    $create = BankHistory::create([
+                        'bank_id'           => $bank->id,
+                        'transaction_name'  => $transaction_name,
+                        'invoice_id'        => $invoice->id,
+                        'date'              => $request->date,
+                        'type'              => 'tax',
+                        'nominal'           => $nominal,
+                        'created_user'      => Auth::user()->id,
+                        'updated_user'      => Auth::user()->id
+                    ]);
+                }
             }else{
                 $requestData = array_merge($request->all(), [
                     'created_user'  => Auth::user()->id,
                     'updated_user'  => Auth::user()->id,
+                    'nominal'       => $nominal
                 ]);
 
                 $data = Tax::create($requestData);
+
+                calculate_bank_expense($bank, $nominal, true);
+
+                $transaction_name = 'Pajak & Biaya dari '.$invoice->invoice_number. 'Sebesar Rp. '.$nominal;
+                $create = BankHistory::create([
+                    'bank_id'           => $bank->id,
+                    'transaction_name'  => $transaction_name,
+                    'invoice_id'        => $invoice->id,
+                    'date'              => $request->date,
+                    'type'              => 'tax',
+                    'nominal'           => $nominal,
+                    'created_user'      => Auth::user()->id,
+                    'updated_user'      => Auth::user()->id
+                ]);
             }
 
             DB::commit();

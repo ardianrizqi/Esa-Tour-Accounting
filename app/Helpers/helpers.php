@@ -59,7 +59,8 @@ function calculate_sell_product($data, $nominal, $is_increase = true)
 {
     if ($is_increase) {
         $data->update([
-            'sale'   => $data->sale + $nominal,
+            'sale'      => $data->sale + $nominal,
+            'profit'    => ($data->sale + $nominal) - $data->purchase
         ]);
     }
 }
@@ -69,6 +70,7 @@ function calculate_purchase_product($data, $nominal, $is_increase = true)
     if ($is_increase) {
         $data->update([
             'purchase'   => $data->purchase + $nominal,
+            'profit'    => ($data->sale) - ($data->purchase + $nominal)
         ]);
     }
 }

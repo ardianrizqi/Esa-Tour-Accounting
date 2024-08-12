@@ -405,7 +405,7 @@ class InvoiceController extends Controller
                 $product = Product::find($value);
 
                 calculate_sell_product($product, $selling_price);
-                calculate_purchase_product($product, $selling_price);
+                calculate_purchase_product($product, $purchase_price);
                 calculate_profit_product($product);
             }
 
@@ -415,7 +415,7 @@ class InvoiceController extends Controller
             Alert::success('Sukses', 'Berhasil Menyimpan Data');
             return redirect()->route('backend.invoice.index');
         } catch (\Throwable $th) {
-            dd($th->getMessage());
+            // dd($th->getMessage());
             DB::rollBack();
 
             Alert::error('Gagal', 'Terjadi Kesalahan Pada Server, Coba Lagi Kembali');
@@ -473,8 +473,14 @@ class InvoiceController extends Controller
 
         foreach ($check as $key => $value) {
             $bank = Bank::find($value->bank_id);
-            calculate_bank_expense($bank, $value->nominal);
-            // calculate_receivables($invoice, $value->nominal, true);
+
+            if ($bank) {
+                if ($value->refund_category == 'Refund Customer') {
+                    calculate_bank_expense($bank, $value->nominal);
+                }else if($value->refund_category == 'Refund Supplier'){
+                    calculate_bank_income($bank, $value->nominal, true);
+                }
+            }
             
             $value->delete();
         }
@@ -486,20 +492,24 @@ class InvoiceController extends Controller
                     $value = format_nominal($value);
 
                     $bank = Bank::find($request->bank_id_refund[$key]);
-                    // dd($request);
+                 
     
                     if ($bank) {
-                        if ($bank->balance < $value) {
-                            // dd('masok');
-                            // DB::rollBack();
-                            $this->error = true;
-                            $this->messege = 'Tidak Bisa Melakukan Refund Customer, Saldo Bank Tidak Mencukupi !!';
+                        if ($request->refund_category[$key] == 'Refund Customer') {
+                            if ($bank->balance < $value) {
+                                // dd('masok');
+                                // DB::rollBack();
+                                $this->error = true;
+                                $this->messege = 'Tidak Bisa Melakukan Refund Customer, Saldo Bank Tidak Mencukupi !!';
+                            }
                         }
-
                     }
                    
-                    // dd('masok');
-                    calculate_bank_expense($bank, $value, true);
+                    if ($request->refund_category[$key] == 'Refund Customer') {
+                        calculate_bank_expense($bank, $value, true);
+                    }else{
+                        calculate_bank_income($bank, $value);
+                    }
 
                     $note = '-';
     
@@ -507,7 +517,9 @@ class InvoiceController extends Controller
                         $note = $request->note_refund[$key];
                     }
     
-                    $transaction_name = 'Refund Customer dari '.$invoice->invoice_number. ' Ket: '.$note;
+                    $product = Product::find($request->category_id_refund[$key]);
+
+                    $transaction_name = 'Refund dari '.$invoice->invoice_number. ' Kategori Item :'. $product->product_category .' Ket: '.$note;
     
           
                     $create = BankHistory::create([
@@ -520,7 +532,8 @@ class InvoiceController extends Controller
                         'nominal'           => $value,
                         'note'              => $note,
                         'created_user'      => Auth::user()->id,
-                        'updated_user'      => Auth::user()->id
+                        'updated_user'      => Auth::user()->id,
+                        'refund_category'   => $request->refund_category[$key]
                     ]);
 
                     // calculate_receivables($invoice, $value);

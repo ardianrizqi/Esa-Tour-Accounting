@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\DB;
 use RealRashid\SweetAlert\Facades\Alert;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Customer;
+use App\Models\Deposit;
+use App\Models\DepositHistory;
 use Carbon\Carbon;
 
 
@@ -26,8 +28,9 @@ class BankController extends Controller
     {
         $title      = $this->title;
         $banks = Bank::all();
+        $deposit = Deposit::all();
                 
-        return view('backend.bank.index', compact('title', 'banks'));
+        return view('backend.bank.index', compact('title', 'banks', 'deposit'));
     }
 
     public function data()
@@ -164,8 +167,23 @@ class BankController extends Controller
 
 
         try {
-            $from_bank = Bank::find($request->from_bank);
-            $to_bank = Bank::find($request->to_bank);
+            [$source_from, $id] = explode('-', $request->from_bank);
+
+            if ($source_from == 'bank') {
+                $from_bank = Bank::find($id);
+            }else{
+                $from_bank = Deposit::find($id);
+            }
+       
+            [$source_to, $id] = explode('-', $request->to_bank);
+
+            if ($source_to == 'bank') {
+                $to_bank = Bank::find($id);
+            }else{
+                $to_bank = Deposit::find($id);
+            }
+
+           
             
             if ($nominal > $from_bank->balance) {
                 DB::rollBack();
@@ -176,29 +194,94 @@ class BankController extends Controller
                 ]);
             }
 
-            calculate_bank_expense($from_bank, $nominal, true);
 
-            $create = BankHistory::create([
-                'bank_id'           => $from_bank->id,
-                'transaction_name'  => 'Transfer Bank ke '.$to_bank->account_name.' Bank '.$to_bank->bank_name.' No Rek: '.$to_bank->account_number,
-                'date'              => Carbon::now(),
-                'type'              => 'transfer_expense',
-                'nominal'           => $nominal,
-                'created_user'      => Auth::user()->id,
-                'updated_user'      => Auth::user()->id
-            ]);
 
-            calculate_bank_income($to_bank, $nominal);
+            if ($source_from == 'bank') {
+                $transaction_name = '';
 
-            $create = BankHistory::create([
-                'bank_id'           => $to_bank->id,
-                'transaction_name'  => 'Transfer Bank dari '.$from_bank->account_name.' Bank '.$from_bank->bank_name.' No Rek: '.$from_bank->account_number,
-                'date'              => Carbon::now(),
-                'type'              => 'transfer_income',
-                'nominal'           => $nominal,
-                'created_user'      => Auth::user()->id,
-                'updated_user'      => Auth::user()->id
-            ]);
+                if ($source_to == 'bank') {
+                   $transaction_name = 'Transfer Bank dari '. $from_bank->bank_name. 'ke Bank '.$to_bank->bank_name.' No Rek: '.$to_bank->account_number;
+                }else{
+                    $transaction_name = 'Transfer Bank dari '.$from_bank->bank_name.'ke Deposit '.$to_bank->name;
+                }
+
+                calculate_bank_expense($from_bank, $nominal, true);
+
+                $create = BankHistory::create([
+                    'bank_id'           => $from_bank->id,
+                    'transaction_name'  => $transaction_name,
+                    'date'              => Carbon::now(),
+                    'type'              => 'transfer_expense',
+                    'nominal'           => $nominal,
+                    'created_user'      => Auth::user()->id,
+                    'updated_user'      => Auth::user()->id
+                ]);
+            }else{
+                $transaction_name = '';
+
+                if ($source_to == 'bank') {
+                   $transaction_name = 'Transfer Deposit dari '. $from_bank->name. 'ke Bank '.$to_bank->bank_name.' No Rek: '.$to_bank->account_number;
+                }else{
+                    $transaction_name = 'Transfer Deposit dari '.$from_bank->name.'ke Deposit '.$to_bank->name;
+                }
+
+                calculate_deposit_expense($from_bank, $nominal, true);
+
+
+                $create = DepositHistory::create([
+                    'deposit_id'        => $from_bank->id,
+                    'transaction_name'  => $transaction_name,
+                    'date'              => Carbon::now(),
+                    'type'              => 'transfer_expense',
+                    'nominal'           => $nominal,
+                    'created_user'      => Auth::user()->id,
+                    'updated_user'      => Auth::user()->id
+                ]);
+            }
+            
+            if ($source_to == 'bank') {
+                $transaction_name = '';
+
+                if ($source_from == 'bank') {
+                   $transaction_name = 'Saldo Masuk dari Bank '. $from_bank->bank_name. 'ke Bank '.$to_bank->bank_name.' No Rek: '.$to_bank->account_number;
+                }else{
+                    $transaction_name = 'Saldo Masuk dari Deposit '.$from_bank->name.'ke Bank '.$to_bank->bank_name;
+                }
+
+                
+                calculate_bank_income($to_bank, $nominal);
+    
+                $create = BankHistory::create([
+                    'bank_id'           => $to_bank->id,
+                    'transaction_name'  => $transaction_name,
+                    'date'              => Carbon::now(),
+                    'type'              => 'transfer_income',
+                    'nominal'           => $nominal,
+                    'created_user'      => Auth::user()->id,
+                    'updated_user'      => Auth::user()->id
+                ]);
+            }else{
+                $transaction_name = '';
+
+                if ($source_from == 'bank') {
+                   $transaction_name = 'Saldo Masuk dari Bank '. $from_bank->bank_name. 'ke Deposit '.$to_bank->name;
+                }else{
+                    $transaction_name = 'Saldo Masuk dari Deposit '.$from_bank->name.'ke Deposit '.$to_bank->name;
+                }
+
+                calculate_deposit_income($to_bank, $nominal);
+
+                $create = DepositHistory::create([
+                    'deposit_id'        => $to_bank->id,
+                    'transaction_name'  => $transaction_name,
+                    'date'              => Carbon::now(),
+                    'type'              => 'transfer_expense',
+                    'nominal'           => $nominal,
+                    'created_user'      => Auth::user()->id,
+                    'updated_user'      => Auth::user()->id
+                ]);
+            }
+          
 
             DB::commit();
 

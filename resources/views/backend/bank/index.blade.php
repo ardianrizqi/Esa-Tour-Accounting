@@ -62,7 +62,11 @@
                                     <option selected>-- Pilih Bank --</option>
                                     
                                     @foreach ($banks as $item)
-                                        <option value="{{ $item->id }}">{{ $item->bank_name }}</option>
+                                        <option value="bank-{{ $item->id }}" data-source="bank">{{ $item->bank_name }}</option>
+                                    @endforeach
+
+                                    @foreach ($deposit as $item)                                           
+                                        <option value="deposit-{{ $item->id }}" data-source="deposit">{{ $item->name }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -73,7 +77,11 @@
                                     <option>-- Pilih Bank --</option>
 
                                     @foreach ($banks as $item)
-                                        <option value="{{ $item->id }}">{{ $item->bank_name }}</option>
+                                        <option value="bank-{{ $item->id }}" data-source="bank">{{ $item->bank_name }}</option>
+                                    @endforeach
+
+                                    @foreach ($deposit as $item)                                           
+                                        <option value="deposit-{{ $item->id }}" data-source="deposit">{{ $item->name }}</option>
                                     @endforeach
                                 </select>
                             </div>
