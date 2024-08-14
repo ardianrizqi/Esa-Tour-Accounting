@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use RealRashid\SweetAlert\Facades\Alert;
 use App\Models\CategoryNote;
+use App\Models\CreditDebit;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 
@@ -85,15 +86,33 @@ class CategoryNoteController extends Controller
 
         try {
             $data = CategoryNote::find($id);
-            $data->delete();
+            $check = CreditDebit::where('category_note_id', $id)->get();
 
-            DB::commit();
+            if (count($check) > 0) {
+                DB::rollBack();
 
-            return response()->json([
-                'status'    => 200,
-                'message'   => 'Data Berhasil Dihapus.',
-            ]);
+                return response()->json([
+                    'status'    => 400,
+                    'message'   => 'Tidak Bisa Menghapus Data, Hapus Data Credit Debit Terlebih Dahulu !!',
+                ]);
+            }else{
+                $data->delete();
+
+                DB::commit();
+
+                return response()->json([
+                    'status'    => 200,
+                    'message'   => 'Data Berhasil Dihapus.',
+                ]);
+            }
+
+
+    
+            // dd($data);
+
+     
         } catch (\Throwable $th) {
+            // dd($th->getMessage());
             DB::rollBack();
 
             return response()->json([

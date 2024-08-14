@@ -54,6 +54,15 @@
                                         <label for="select2Basic" class="form-label">Nomor Invoice</label><span style="color: red;">*</span>
                                         <input type="text" class="form-control" id="floatingInput" aria-describedby="floatingInputHelp" name="invoice_number" required @isset($data) value="{{ $data->invoice_number }}" @endisset/>
                                     </div>
+
+                                    <div class="col-md-3 mb-4">
+                                        <label for="status" class="form-label">Status Invoice</label><span style="color: red;">*</span>
+                                        <select id="status" class="select2 form-select form-select-lg" data-allow-clear="true" name="status" required>
+                                            <option>-- Pilih Status --</option>
+                                            <option @isset($data) @if($data->status == 'Aktif') selected  @endif @endisset value="Aktif">Aktif</option>
+                                            <option @isset($data) @if($data->status == 'Void') selected  @endif @endisset value="Void">Void</option>
+                                        </select>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -285,7 +294,7 @@
                         </div>
                     </div>
 
-                    <div class="col-md-12">
+                    {{-- <div class="col-md-12">
                         <div class="card mb-4">
                             <div class="card-header d-flex justify-content-between align-items-center">
                                 <h5 class="card-title m-0">Refund Customer</h5>
@@ -320,7 +329,7 @@
                                                         <option>-- Pilih Kategori --</option>
                 
                                                         @foreach ($products as $product)
-                                                            <option @if($item->product_id == $product->id) selected @endif value="{{ $product->id }}">{{ $product->product_category }}</option>
+                                                            <option @if($item->product_id === $product->id) selected @endif value="{{ $product->id }}">{{ $product->product_category }}</option>
                                                         @endforeach
                                                     </select>
                                                 </div>
@@ -408,7 +417,7 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </div> --}}
     
                     <div class="col-md-12">
                         <div class="card mb-4">

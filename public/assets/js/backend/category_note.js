@@ -98,13 +98,23 @@ $(function () {
                         type: 'DELETE',
                         success: function (result) {
                             // On success, remove the row from the table
-                            dt_basic.row(row).remove().draw();
-                            Swal.fire(
-                                'Deleted!',
-                                'Data Berhasil Dihapus.',
-                                'success'
-                            );
-
+                            
+                            if (result.status == 200) {
+                                dt_basic.row(row).remove().draw();
+                                Swal.fire(
+                                    'Deleted!',
+                                    'Data Berhasil Dihapus.',
+                                    'success'
+                                );
+    
+                            }else{
+                                Swal.fire(
+                                    'Error!',
+                                    result.message,
+                                    'error'
+                                );
+                            }
+                        
                             $('#loading').hide();
                         },
                         error: function (xhr, status, error) {

@@ -145,7 +145,8 @@ class InvoiceController extends Controller
                 'updated_user'          => Auth::user()->id,
                 'receivables'           => $request->price_total_selling,
                 'due_date'              => $request->due_date,
-                'is_printed'            => $request->physical_invoice_id == 1 ? true : false
+                'is_printed'            => $request->physical_invoice_id == 1 ? true : false,
+                'status'                => $request->status
             ];
 
             if ($request->invoice_id) {
@@ -162,6 +163,8 @@ class InvoiceController extends Controller
             }
 
             // dd('keluar');
+
+        
             $id = $insert_h->id;
 
             $invoice = Invoice::find($id);
@@ -178,7 +181,7 @@ class InvoiceController extends Controller
                 $value->delete();
             }
 
-         
+            
             # pembayaran customer
             if ($request->nominal) {
                 foreach ($request->nominal as $key => $value) {
@@ -260,8 +263,8 @@ class InvoiceController extends Controller
                 }
             }
             // dd($request);
-         
-           
+            
+            
             // if ($status_payment) {
             //     $invoice->update([
             //         'status'    => 'Sudah Lunas'
@@ -269,7 +272,7 @@ class InvoiceController extends Controller
             // }
 
             # refund
-            $this->store_refund($id, $request);
+            // $this->store_refund($id, $request);
 
             // dd('mask');
             # cashback
@@ -408,7 +411,7 @@ class InvoiceController extends Controller
                 calculate_purchase_product($product, $purchase_price);
                 calculate_profit_product($product);
             }
-
+           
             // dd('masok');
             DB::commit();
 
@@ -454,6 +457,8 @@ class InvoiceController extends Controller
             ->where('type', 'cashback')
             ->get();
 
+            // dd($cashback);
+
         $tax = BankHistory::where('invoice_id', $data->id)
                 ->where('type', 'tax')
                 ->get();
@@ -471,6 +476,7 @@ class InvoiceController extends Controller
                 ->where('type', 'refund')
                 ->get();
 
+   
         foreach ($check as $key => $value) {
             $bank = Bank::find($value->bank_id);
 
@@ -484,6 +490,7 @@ class InvoiceController extends Controller
             
             $value->delete();
         }
+        
 
         if ($request->nominal_refund) {
             // dd('masok');
@@ -495,6 +502,7 @@ class InvoiceController extends Controller
                  
     
                     if ($bank) {
+                        // dd($request);
                         if ($request->refund_category[$key] == 'Refund Customer') {
                             if ($bank->balance < $value) {
                                 // dd('masok');
@@ -505,6 +513,7 @@ class InvoiceController extends Controller
                         }
                     }
                    
+      
                     if ($request->refund_category[$key] == 'Refund Customer') {
                         calculate_bank_expense($bank, $value, true);
                     }else{
@@ -541,6 +550,7 @@ class InvoiceController extends Controller
             }
         }
         
+        // dd('masok');
     }
 
     public function store_cashback($id, $request)
@@ -584,7 +594,7 @@ class InvoiceController extends Controller
                     }
                     
                     $transaction_name = 'Cashback Customer dari '.$invoice->invoice_number. ' Ket: '.$note;
-                    // dd($request);
+                    // dd($request->category_id_cashback);
     
                     $create = BankHistory::create([
                         'bank_id'           => $request->bank_id_cashback[$key],
@@ -694,7 +704,7 @@ class InvoiceController extends Controller
                 $value->delete();
             }
 
-            // dd('masok');
+     
             # pembayaran customer
             if ($request->nominal) {
                 foreach ($request->nominal as $key => $value) {
@@ -802,6 +812,7 @@ class InvoiceController extends Controller
 
             # refund
             $this->store_refund($id, $request);
+            // dd('masok');
             
             # cashback
             $this->store_cashback($id, $request);

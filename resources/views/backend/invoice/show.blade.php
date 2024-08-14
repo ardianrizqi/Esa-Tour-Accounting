@@ -311,10 +311,16 @@
                                                 </select>
                                             </div>
 
-                                            <div class="col-md-3 mb-4">
-                                                <label for="select2Basic" class="form-label">Keterangan</label>
-                                                <textarea id="note_refund" rows="1" class="form-control" name="note_refund[]">{{ $item->note }}</textarea>
+                                            
+                                            <div class="col-md-2 mb-4">
+                                                <label @if($key == 0) for="refund_category" @else for="refund_category_"{{ $key }} @endif class="form-label">Kategori Refund</label><span style="color: red;">*</span>
+                                                <select @if($key == 0) id="refund_category" @else id="refund_category_"{{ $key }} @endif class="select2 form-select form-select-lg" data-allow-clear="true" name="refund_category[]" required>
+                                                    <option>-- Pilih Kategori --</option>
+                                                    <option @if($item->refund_category == 'Refund Customer') selected @endif value="Refund Customer">Refund Customer</option>
+                                                    <option @if($item->refund_category == 'Refund Supplier') selected @endif value="Refund Supplier">Refund Supplier</option>
+                                                </select>
                                             </div>
+
 
                                             <div class="col-md-2 mb-4">
                                                 <label @if($key == 0) for="bank_id_refund" @else for="bank_id_refund_"{{ $key }} @endif class="form-label">Dari Bank</label>
@@ -325,6 +331,12 @@
                                                         <option @if($item->bank_id == $item2->id) selected @endif value="{{ $item2->id }}">{{ $item2->bank_name }}</option>
                                                     @endforeach
                                                 </select>
+                                            </div>
+
+
+                                            <div class="col-md-6 mb-6">
+                                                <label for="select2Basic" class="form-label">Keterangan</label>
+                                                <textarea id="note_refund" rows="3" class="form-control" name="note_refund[]">{{ $item->note }}</textarea>
                                             </div>
                                         </div> 
                                     @endforeach
@@ -354,9 +366,13 @@
                                             </select>
                                         </div>
 
-                                        <div class="col-md-3 mb-4">
-                                            <label for="select2Basic" class="form-label">Keterangan</label>
-                                            <textarea id="note_refund" rows="1" class="form-control" name="note_refund[]"></textarea>
+                                        <div class="col-md-2 mb-4">
+                                            <label for="refund_category" class="form-label">Kategori Refund</label><span style="color: red;">*</span>
+                                            <select id="refund_category" class="select2 form-select form-select-lg" data-allow-clear="true" name="refund_category[]" required>
+                                                <option>-- Pilih Kategori --</option>
+                                                <option value="Refund Customer">Refund Customer</option>
+                                                <option value="Refund Supplier">Refund Supplier</option>
+                                            </select>
                                         </div>
 
                                         <div class="col-md-2 mb-4">
@@ -368,6 +384,11 @@
                                                     <option value="{{ $item->id }}">{{ $item->bank_name }}</option>
                                                 @endforeach
                                             </select>
+                                        </div>
+
+                                        <div class="col-md-6 mb-6">
+                                            <label for="select2Basic" class="form-label">Keterangan</label>
+                                            <textarea id="note_refund" class="form-control" name="note_refund[]" rows="3"></textarea>
                                         </div>
                                     </div> 
                                 @endif
@@ -462,7 +483,7 @@
                                         <div class="col-md-2 mb-4">
                                             <label for="category_id_cashback" class="form-label">Kategori Item</label><span style="color: red;">*</span>
                                             <select id="category_id_cashback" class="select2 form-select form-select-lg" data-allow-clear="true" name="category_id_cashback[]" required>
-                                                <option>-- Pilih Kategori --</option>
+                                                <option value="">-- Pilih Kategori --</option>
         
                                                 @foreach ($products as $item)
                                                     <option value="{{ $item->id }}">{{ $item->product_category }}</option>

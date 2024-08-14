@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Backend;
 
 use App\Http\Controllers\Controller;
 use App\Models\Bank;
+use App\Models\BankHistory;
 use App\Models\CategoryNote;
 use App\Models\CreditDebit;
 use App\Models\Invoice;
@@ -62,15 +63,46 @@ class CreditDebitController extends Controller
         $nominal = preg_replace('/[^0-9]/', '', $nominal);
 
         try {
+            $bank = Bank::find($request->bank_id);
+
             if ($request->credit_debit_id) {
+                if ($request->type == 'Kredit') {
+                    $bank_h = BankHistory::where([
+                        'credit_debit_id'   => $request->credit_debit_id
+                    ])->latest()->first();
+                    
+                    calculate_bank_expense($bank, $bank_h->nominal);
+                }else{
+                    $bank_h = BankHistory::where([
+                        'credit_debit_id'   => $request->credit_debit_id
+                    ])->latest()->first();
+                    
+                    calculate_bank_income($bank, $bank_h->nominal, true);
+                }
+
                 $requestData = array_merge($request->all(), [
                     'updated_user'  => Auth::user()->id,
                     'nominal'   => $nominal
                 ]);
 
-                $data = CreditDebit::find($request->bank_id);
+                $data = CreditDebit::find($request->credit_debit_id);
                 $data->update($requestData);
+
+                if ($request->type == 'Kredit') {
+                    $transaction_name = 'Edit Kredit Note Dilakukan Sebesar Rp. '.$nominal;
+                    calculate_bank_expense($bank, $nominal, true);
+                }else{
+                    $transaction_name = 'Debit Note Dilakukan Sebesar Rp. '.$nominal;
+                    calculate_bank_income($bank, $nominal);
+                }
+                
+                // dd($bank_h);
+                $bank_h->update([
+                    'transaction_name'  => $transaction_name,
+                    'nominal'           => $nominal
+                ]);
             }else{
+
                 $requestData = array_merge($request->all(), [
                     'created_user'  => Auth::user()->id,
                     'updated_user'  => Auth::user()->id,
@@ -78,6 +110,41 @@ class CreditDebitController extends Controller
                 ]);
 
                 $data = CreditDebit::create($requestData);
+
+                if ($request->type == 'Kredit') {
+                    $transaction_name = 'Kredit Note Dilakukan Sebesar Rp. '.$nominal;
+
+                    $create = BankHistory::create([
+                        'bank_id'           => $request->bank_id,
+                        'transaction_name'  => $transaction_name,
+                        'credit_debit_id'   => $data->id,
+                        'date'              => $request->date,
+                        'type'              => 'credit',
+                        'nominal'           => $nominal,
+                        'note'              => $request->note,
+                        'created_user'      => Auth::user()->id,
+                        'updated_user'      => Auth::user()->id
+                    ]);
+
+
+                    calculate_bank_expense($bank, $nominal, true);
+                }else{
+                    $transaction_name = 'Debit Note Dilakukan Sebesar Rp. '.$nominal;
+                 
+                    $create = BankHistory::create([
+                        'bank_id'           => $request->bank_id,
+                        'transaction_name'  => $transaction_name,
+                        'credit_debit_id'   => $data->id,
+                        'date'              => $request->date,
+                        'type'              => 'debit',
+                        'nominal'           => $nominal,
+                        'note'              => $request->note,
+                        'created_user'      => Auth::user()->id,
+                        'updated_user'      => Auth::user()->id
+                    ]);
+
+                    calculate_bank_income($bank, $nominal);
+                }
             }
 
             DB::commit();
@@ -86,7 +153,7 @@ class CreditDebitController extends Controller
             Alert::success('Sukses', 'Berhasil Menyimpan Data');
             return redirect()->route('backend.credit_debit.index');
         } catch (\Throwable $th) {
-            // dd($th->getMessage());
+            dd($th->getMessage());
             DB::rollBack();
 
             Alert::error('Gagal', 'Terjadi Kesalahan Pada Server, Coba Lagi Kembali');
