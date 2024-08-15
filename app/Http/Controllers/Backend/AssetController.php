@@ -83,7 +83,7 @@ class AssetController extends Controller
                     'nominal'   => $nominal
                 ]);
 
-                $data = Asset::find($request->bank_id);
+                $data = Asset::find($request->asset_id);
                 $data->update($requestData);
             }else{
                 $requestData = array_merge($request->all(), [
@@ -117,7 +117,7 @@ class AssetController extends Controller
             Alert::success('Sukses', 'Berhasil Menyimpan Data');
             return redirect()->route('backend.asset.index');
         } catch (\Throwable $th) {
-            // dd($th->getMessage());
+            dd($th->getMessage());
             DB::rollBack();
 
             Alert::error('Gagal', 'Terjadi Kesalahan Pada Server, Coba Lagi Kembali');

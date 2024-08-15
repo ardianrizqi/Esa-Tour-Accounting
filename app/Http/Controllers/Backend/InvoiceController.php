@@ -175,6 +175,7 @@ class InvoiceController extends Controller
             // dd($check);
             foreach ($check as $key => $value) {
                 $bank = Bank::find($value->bank_id);
+
                 calculate_bank_income($bank, $value->nominal, true);
                 calculate_receivables($invoice, $value->nominal, true);
                 
@@ -185,7 +186,7 @@ class InvoiceController extends Controller
             # pembayaran customer
             if ($request->nominal) {
                 foreach ($request->nominal as $key => $value) {
-                    if ($value !== null) {
+                    if ($value !== null && $request->status == 'Aktif') {
                         $bank = Bank::find($request->bank_id[$key]);
                         calculate_bank_income($bank, $value);
     
@@ -215,12 +216,24 @@ class InvoiceController extends Controller
             }
 
             # hutang vendor
+            $check = BankHistory::where('invoice_id', $id)
+            ->where('type', 'vendor_payment')
+            ->get();
+
+            // dd($check);
+            foreach ($check as $key => $value) {
+                $bank = Bank::find($value->bank_id);
+
+                calculate_bank_expense($bank, $value->nominal);
+                $value->delete();
+            }
+
             if ($request->inv_debt_id) {
                 foreach ($request->inv_debt_id as $key => $value) {
                     $invoice_d = InvoiceDetail::find($value);
                     $status_payment = true;
     
-                    if ($invoice_d->status_debt !== 'Sudah Lunas') {
+                    if ($invoice_d->status_debt !== 'Sudah Lunas' && $request->status == 'Aktif') {
                         if ($request->payment_date[$key] !== null) {
                             $bank = Bank::find($invoice_d->from_bank);
         
@@ -309,7 +322,7 @@ class InvoiceController extends Controller
                 if ($source == 'bank') {
                     $bank = Bank::find($id);
 
-                    if ($request->purchase_price[$key] > $bank->balance) {
+                    if ($request->purchase_price[$key] > $bank->balance && $request->status == 'Aktif') {
                         DB::rollBack();
                         Alert::error('Error', 'Saldo Bank Tidak Cukup. Balance : '.$bank->balance);
                         return redirect()->back();
@@ -333,24 +346,27 @@ class InvoiceController extends Controller
 
                     // dd($param_d);
 
-                    calculate_bank_expense($bank, $purchase_price, true);
+                    if ($request->status == 'Aktif') {
+                        calculate_bank_expense($bank, $purchase_price, true);
     
-                    $create = BankHistory::create([
-                        'bank_id'           => $bank->id,
-                        'transaction_name'  => $transaction_name,
-                        'invoice_id'        => $insert_h->id,
-                        'date'              => $request->date_publisher,
-                        'product_id'        => $value,
-                        'type'              => 'expense',
-                        'nominal'           => $purchase_price,
-                        'note'              => $request->note[$key],
-                        'created_user'      => Auth::user()->id,
-                        'updated_user'      => Auth::user()->id
-                    ]);
+                        $create = BankHistory::create([
+                            'bank_id'           => $bank->id,
+                            'transaction_name'  => $transaction_name,
+                            'invoice_id'        => $insert_h->id,
+                            'date'              => $request->date_publisher,
+                            'product_id'        => $value,
+                            'type'              => 'expense',
+                            'nominal'           => $purchase_price,
+                            'note'              => $request->note[$key],
+                            'created_user'      => Auth::user()->id,
+                            'updated_user'      => Auth::user()->id
+                        ]);
+                    }
+                   
                 } elseif ($source == 'deposit') {
                     $deposit = Deposit::find($id);
 
-                    if ($request->purchase_price[$key] > $deposit->balance) {
+                    if ($request->purchase_price[$key] > $deposit->balance && $request->status == 'Aktif') {
                         DB::rollBack();
                         Alert::error('Error', 'Saldo Deposit Tidak Cukup. Balance : '.$deposit->balance);
                         return redirect()->back();
@@ -373,20 +389,22 @@ class InvoiceController extends Controller
                         'updated_user'      => Auth::user()->id
                     ];
 
-                    calculate_deposit_expense($deposit, $purchase_price, true);
+                    if ($request->status == 'Aktif') {
+                        calculate_deposit_expense($deposit, $purchase_price, true);
 
-                    $create = DepositHistory::create([
-                        'deposit_id'        => $deposit->id,
-                        'transaction_name'  => $transaction_name,
-                        'invoice_id'        => $insert_h->id,
-                        'date'              => $request->date_publisher,
-                        'product_id'        => $value,
-                        'type'              => 'expense',
-                        'nominal'           => $purchase_price,
-                        'note'              => $request->note[$key],
-                        'created_user'      => Auth::user()->id,
-                        'updated_user'      => Auth::user()->id
-                    ]);
+                        $create = DepositHistory::create([
+                            'deposit_id'        => $deposit->id,
+                            'transaction_name'  => $transaction_name,
+                            'invoice_id'        => $insert_h->id,
+                            'date'              => $request->date_publisher,
+                            'product_id'        => $value,
+                            'type'              => 'expense',
+                            'nominal'           => $purchase_price,
+                            'note'              => $request->note[$key],
+                            'created_user'      => Auth::user()->id,
+                            'updated_user'      => Auth::user()->id
+                        ]);
+                    }
                 }
     
                 if ($request->debt_to_vendors[$key] !== null) {
@@ -407,9 +425,11 @@ class InvoiceController extends Controller
 
                 $product = Product::find($value);
 
-                calculate_sell_product($product, $selling_price);
-                calculate_purchase_product($product, $purchase_price);
-                calculate_profit_product($product);
+                if ($request->status == 'Aktif') {
+                    calculate_sell_product($product, $selling_price);
+                    calculate_purchase_product($product, $purchase_price);
+                    calculate_profit_product($product);
+                }
             }
            
             // dd('masok');
@@ -503,7 +523,7 @@ class InvoiceController extends Controller
     
                     if ($bank) {
                         // dd($request);
-                        if ($request->refund_category[$key] == 'Refund Customer') {
+                        if ($request->refund_category[$key] == 'Refund Customer' && $request->status == 'Aktif') {
                             if ($bank->balance < $value) {
                                 // dd('masok');
                                 // DB::rollBack();
@@ -514,11 +534,14 @@ class InvoiceController extends Controller
                     }
                    
       
-                    if ($request->refund_category[$key] == 'Refund Customer') {
-                        calculate_bank_expense($bank, $value, true);
-                    }else{
-                        calculate_bank_income($bank, $value);
+                    if ($request->status == 'Aktif') {
+                        if ($request->refund_category[$key] == 'Refund Customer') {
+                            calculate_bank_expense($bank, $value, true);
+                        }else{
+                            calculate_bank_income($bank, $value);
+                        }
                     }
+                
 
                     $note = '-';
     
@@ -530,20 +553,22 @@ class InvoiceController extends Controller
 
                     $transaction_name = 'Refund dari '.$invoice->invoice_number. ' Kategori Item :'. $product->product_category .' Ket: '.$note;
     
-          
-                    $create = BankHistory::create([
-                        'bank_id'           => $request->bank_id_refund[$key],
-                        'transaction_name'  => $transaction_name,
-                        'invoice_id'        => $id,
-                        'date'              => $request->date_refund[$key],
-                        'product_id'        => $request->category_id_refund[$key],
-                        'type'              => 'refund',
-                        'nominal'           => $value,
-                        'note'              => $note,
-                        'created_user'      => Auth::user()->id,
-                        'updated_user'      => Auth::user()->id,
-                        'refund_category'   => $request->refund_category[$key]
-                    ]);
+                    if ($request->status == 'Aktif') {
+                        $create = BankHistory::create([
+                            'bank_id'           => $request->bank_id_refund[$key],
+                            'transaction_name'  => $transaction_name,
+                            'invoice_id'        => $id,
+                            'date'              => $request->date_refund[$key],
+                            'product_id'        => $request->category_id_refund[$key],
+                            'type'              => 'refund',
+                            'nominal'           => $value,
+                            'note'              => $note,
+                            'created_user'      => Auth::user()->id,
+                            'updated_user'      => Auth::user()->id,
+                            'refund_category'   => $request->refund_category[$key]
+                        ]);
+                    }
+                   
 
                     // calculate_receivables($invoice, $value);
                 }
@@ -578,7 +603,7 @@ class InvoiceController extends Controller
         // dd($request);
         if ($request->nominal_cashback) {
             foreach ($request->nominal_cashback as $key => $value) {
-                if ($value !== null) {
+                if ($value !== null && $request->status == 'Aktif') {
                     $value = format_nominal($value);
                     $bank = Bank::find($request->bank_id_cashback[$key]);
       
@@ -636,7 +661,7 @@ class InvoiceController extends Controller
 
         if ($request->nominal_tax) {
             foreach ($request->nominal_tax as $key => $value) {
-                if ($value !== null) {
+                if ($value !== null && $request->status == 'Aktif') {
                     $value = format_nominal($value);
                     $bank = Bank::find($request->bank_id_tax[$key]);
                 
@@ -708,7 +733,7 @@ class InvoiceController extends Controller
             # pembayaran customer
             if ($request->nominal) {
                 foreach ($request->nominal as $key => $value) {
-                    if ($value !== null) {
+                    if ($value !== null && $request->status == 'Aktif') {
                         $value = format_nominal($value);
                         // dd($value);
                         $bank = Bank::find($request->bank_id[$key]);
@@ -748,6 +773,17 @@ class InvoiceController extends Controller
 
             # hutang vendor
             // dd($request);
+            $check = BankHistory::where('invoice_id', $id)
+            ->where('type', 'vendor_payment')
+            ->get();
+
+            // dd($check);
+            foreach ($check as $key => $value) {
+                $bank = Bank::find($value->bank_id);
+
+                calculate_bank_expense($bank, $value->nominal);
+                $value->delete();
+            }
 
             if ($request->inv_debt_id) {
                 $status_payment = true;
@@ -755,7 +791,7 @@ class InvoiceController extends Controller
                 foreach ($request->inv_debt_id as $key => $value) {
                     $invoice_d = InvoiceDetail::find($value);
     
-                    if ($invoice_d->status_debt !== 'Sudah Lunas') {
+                    if ($invoice_d->status_debt !== 'Sudah Lunas' && $request->status == 'Aktif') {
                         if ($request->payment_date[$key] !== null) {
                             $bank = Bank::find($invoice_d->from_bank);
         

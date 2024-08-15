@@ -118,7 +118,7 @@
                                     @foreach ($invoice as $item)
                                         @php 
                                             $invoice_d = App\Models\InvoiceDetail::where('invoice_id', $item->id)->get();
-                                            // dd($invoice_d[0]);
+                                            // dd($invoice_d[0]->category);
                                         @endphp
 
                                         <tr>
@@ -128,14 +128,14 @@
                                             <td>{{ $item->date_publisher }}</td>
                                             <td>{{ $item->customer->name }}</td>
                                             <td>
-                                                @if (isset($invoice_d))
+                                                @if (isset($invoice_d[0]))
                                                 {{ $invoice_d[0]->category->product_category }} 
                                                 @else 
                                                     -
                                                 @endif
                                             </td>
                                             <td>
-                                                @if (isset($invoice_d))
+                                                @if (isset($invoice_d[0]))
                                                     {{ $invoice_d[0]->product_name }} 
                                                 @else 
                                                     -

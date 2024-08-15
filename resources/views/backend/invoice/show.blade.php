@@ -57,6 +57,8 @@
                                     <b>Status :</b> <br>
                                     @if($data->status == 'Belum Lunas')
                                         <label class="btn btn-sm btn-danger">Belum Lunas</label>
+                                    @elseif($data->status == 'Void')
+                                        <label class="btn btn-sm btn-danger">Void</label>
                                     @else
                                         <label class="btn btn-sm btn-success">Sudah Lunas</label>
                                     @endif
