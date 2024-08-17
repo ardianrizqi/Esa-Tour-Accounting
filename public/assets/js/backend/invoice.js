@@ -6,6 +6,7 @@ $(function () {
         dt_basic = table.DataTable({
             ajax: "invoice/data",
             dataSrc: 'data',
+            "scrollX": true,
             columns: [
                 {
                     data: null,
@@ -16,10 +17,11 @@ $(function () {
                 },
                 {
                     data: null,
+                    "width": "150px",
                     render: function (data, type, row, meta) {
                         return '<button class="btn btn-sm btn-info">'+ data.invoice_number +'</button>';
                     },
-                    orderable: false
+                    orderable: false,
                 },
                 { data: 'date_publisher' },
                 {
@@ -99,29 +101,29 @@ $(function () {
             displayLength: 10,
             lengthMenu: [7, 10, 25, 50, 75, 100],
             buttons: [],
-            responsive: {
-                details: {
-                    display: $.fn.dataTable.Responsive.display.modal({
-                        header: function (row) {
-                            var data = row.data();
-                            return 'Details of ' + data['name'];
-                        }
-                    }),
-                    type: 'column',
-                    renderer: function (api, rowIdx, columns) {
-                        var data = $.map(columns, function (col, i) {
-                            return col.title !== '' // ? Do not show row in modal popup if title is blank (for check box)
-                                ? '<tr data-dt-row="' + col.rowIndex + '" data-dt-column="' + col.columnIndex + '">' +
-                                    '<td>' + col.title + ':' + '</td> ' +
-                                    '<td>' + col.data + '</td>' +
-                                    '</tr>'
-                                : '';
-                        }).join('');
+            // responsive: {
+            //     details: {
+            //         display: $.fn.dataTable.Responsive.display.modal({
+            //             header: function (row) {
+            //                 var data = row.data();
+            //                 return 'Details of ' + data['name'];
+            //             }
+            //         }),
+            //         type: 'column',
+            //         renderer: function (api, rowIdx, columns) {
+            //             var data = $.map(columns, function (col, i) {
+            //                 return col.title !== '' // ? Do not show row in modal popup if title is blank (for check box)
+            //                     ? '<tr data-dt-row="' + col.rowIndex + '" data-dt-column="' + col.columnIndex + '">' +
+            //                         '<td>' + col.title + ':' + '</td> ' +
+            //                         '<td>' + col.data + '</td>' +
+            //                         '</tr>'
+            //                     : '';
+            //             }).join('');
 
-                        return data ? $('<table class="table"/><tbody />').append(data) : false;
-                    }
-                }
-            }
+            //             return data ? $('<table class="table"/><tbody />').append(data) : false;
+            //         }
+            //     }
+            // }
         });
 
         

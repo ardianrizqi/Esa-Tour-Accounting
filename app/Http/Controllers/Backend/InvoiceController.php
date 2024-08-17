@@ -469,6 +469,7 @@ class InvoiceController extends Controller
                             ->where('type', 'customer_payment')
                             ->get();
 
+        // dd($customer_payment);
         $refund = BankHistory::where('invoice_id', $data->id)
                         ->where('type', 'refund')
                         ->get();
@@ -516,6 +517,20 @@ class InvoiceController extends Controller
             // dd('masok');
             foreach ($request->nominal_refund as $key => $value) {
                 if ($value !== null) {
+                    // dd($request->category_id_refund[$key]);
+                    if ($request->refund_category[$key] == null) {
+                        $this->error = true;
+                        $this->messege = 'Kategori Refund Wajib Diisi';
+
+                        break;
+                    }
+
+                    if ($request->category_id_refund[$key] == null) {
+                        $this->error = true;
+                        $this->messege = 'Kategori Item Refund Wajib Diisi';
+                        break;
+                    }
+
                     $value = format_nominal($value);
 
                     $bank = Bank::find($request->bank_id_refund[$key]);
@@ -604,6 +619,12 @@ class InvoiceController extends Controller
         if ($request->nominal_cashback) {
             foreach ($request->nominal_cashback as $key => $value) {
                 if ($value !== null && $request->status == 'Aktif') {
+                    if ($request->category_id_cashback[$key] == null) {
+                        $this->error = true;
+                        $this->messege = 'Kategori Item Cashback Wajib Diisi';
+                        break;
+                    }
+                    
                     $value = format_nominal($value);
                     $bank = Bank::find($request->bank_id_cashback[$key]);
       
@@ -716,6 +737,12 @@ class InvoiceController extends Controller
         DB::beginTransaction();
 
         try {
+            // dd($request->nominal_refund[0]);
+            // if (condition) {
+            //     # code...
+            // }
+
+
             $invoice = Invoice::find($id);
             $check = BankHistory::where('invoice_id', $id)
                     ->where('type', 'customer_payment')
@@ -733,6 +760,7 @@ class InvoiceController extends Controller
             # pembayaran customer
             if ($request->nominal) {
                 foreach ($request->nominal as $key => $value) {
+                    // dd($request->status);
                     if ($value !== null && $request->status == 'Aktif') {
                         $value = format_nominal($value);
                         // dd($value);
@@ -785,8 +813,8 @@ class InvoiceController extends Controller
                 $value->delete();
             }
 
+            $status_payment = true;
             if ($request->inv_debt_id) {
-                $status_payment = true;
                 
                 foreach ($request->inv_debt_id as $key => $value) {
                     $invoice_d = InvoiceDetail::find($value);
@@ -856,6 +884,13 @@ class InvoiceController extends Controller
 
             # tax
             $this->store_tax($id, $request);
+
+            if ($this->error) {
+                Alert::error('Error', $this->messege);
+
+                DB::rollBack();
+                return redirect()->back();
+            }
 
             DB::commit();
 

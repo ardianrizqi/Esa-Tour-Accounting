@@ -24,7 +24,7 @@ $(function () {
                 {
                     data: null,
                     render: function (data, type, row) {
-                       if (data['type'] == 'customer_payment' || data['type'] == 'cashback' || data['type'] == 'modal' || data['type'] == 'transfer_income') {
+                       if (data['type'] == 'customer_payment' || data['type'] == 'cashback' || data['type'] == 'modal' || data['type'] == 'transfer_income' || data['type'] == 'credit') {
                             return 'Pemasukan';
                        }else if(data['type'] == 'vendor_payment' || data['type'] == 'refund' || data['type'] == 'tax' || data['type'] == 'deposit' || data['type'] == 'transfer_expense' || data['type'] == 'expense'){
                             if (data['type'] == 'refund' && data['refund_category'] == 'Refund Supplier') {
@@ -32,6 +32,8 @@ $(function () {
                             }else{
                                 return  'Pengeluaran';
                             }
+                        }else if(data['type'] == 'debit'){
+                            return  'Pengeluaran';
                         }else{
                             return '-';
                        }

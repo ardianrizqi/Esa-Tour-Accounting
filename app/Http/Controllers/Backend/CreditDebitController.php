@@ -89,10 +89,10 @@ class CreditDebitController extends Controller
                 $data->update($requestData);
 
                 if ($request->type == 'Kredit') {
-                    $transaction_name = 'Edit Kredit Note Dilakukan Sebesar Rp. '.$nominal;
+                    $transaction_name = 'Edit Kredit Note : '.$request->name.' Dilakukan Sebesar Rp. '.$nominal;
                     calculate_bank_expense($bank, $nominal, true);
                 }else{
-                    $transaction_name = 'Debit Note Dilakukan Sebesar Rp. '.$nominal;
+                    $transaction_name = 'Debit Note : '.$request->name. ' Dilakukan Sebesar Rp. '.$nominal;
                     calculate_bank_income($bank, $nominal);
                 }
                 
@@ -112,7 +112,7 @@ class CreditDebitController extends Controller
                 $data = CreditDebit::create($requestData);
 
                 if ($request->type == 'Kredit') {
-                    $transaction_name = 'Kredit Note Dilakukan Sebesar Rp. '.$nominal;
+                    $transaction_name = 'Kredit Note : '.$request->name.' Dilakukan Sebesar Rp. '.$nominal;
 
                     $create = BankHistory::create([
                         'bank_id'           => $request->bank_id,
@@ -129,7 +129,7 @@ class CreditDebitController extends Controller
 
                     calculate_bank_expense($bank, $nominal, true);
                 }else{
-                    $transaction_name = 'Debit Note Dilakukan Sebesar Rp. '.$nominal;
+                    $transaction_name = 'Debit Note : '.$request->name.' Dilakukan Sebesar Rp. '.$nominal;
                  
                     $create = BankHistory::create([
                         'bank_id'           => $request->bank_id,

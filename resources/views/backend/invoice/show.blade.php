@@ -11,6 +11,7 @@
             enctype="multipart/form-data">
             @csrf
 
+            <input type="hidden" name="status" value="{{ $data->status }}">
             <div class="row">
                 <div class="col-md-12">
                     <div class="card mb-4">
@@ -54,11 +55,11 @@
 
                             <div class="d-flex justify-content-between align-items-center" style="margin-top: 5%;">
                                 <label for="">
-                                    <b>Status :</b> <br>
-                                    @if($data->status == 'Belum Lunas')
+                                    <b>Status : {{ $data->status_receivables }}</b> <br>
+                                    @if($data->status_receivables == 'Belum Lunas')
                                         <label class="btn btn-sm btn-danger">Belum Lunas</label>
-                                    @elseif($data->status == 'Void')
-                                        <label class="btn btn-sm btn-danger">Void</label>
+                                    {{-- @elseif($data->status == 'Void')
+                                        <label class="btn btn-sm btn-danger">Void</label> --}}
                                     @else
                                         <label class="btn btn-sm btn-success">Sudah Lunas</label>
                                     @endif
@@ -317,7 +318,7 @@
                                             <div class="col-md-2 mb-4">
                                                 <label @if($key == 0) for="refund_category" @else for="refund_category_"{{ $key }} @endif class="form-label">Kategori Refund</label><span style="color: red;">*</span>
                                                 <select @if($key == 0) id="refund_category" @else id="refund_category_"{{ $key }} @endif class="select2 form-select form-select-lg" data-allow-clear="true" name="refund_category[]" required>
-                                                    <option>-- Pilih Kategori --</option>
+                                                    <option value="">-- Pilih Kategori --</option>
                                                     <option @if($item->refund_category == 'Refund Customer') selected @endif value="Refund Customer">Refund Customer</option>
                                                     <option @if($item->refund_category == 'Refund Supplier') selected @endif value="Refund Supplier">Refund Supplier</option>
                                                 </select>
@@ -359,8 +360,8 @@
 
                                         <div class="col-md-2 mb-4">
                                             <label for="category_id_refund" class="form-label">Kategori Item</label><span style="color: red;">*</span>
-                                            <select id="category_id_refund" class="select2 form-select form-select-lg" data-allow-clear="true" name="category_id_refund[]" required>
-                                                <option>-- Pilih Kategori --</option>
+                                            <select id="category_id_refund" class="select2 form-select form-select-lg" data-allow-clear="true" name="category_id_refund[]">
+                                                <option value="">-- Pilih Kategori --</option>
         
                                                 @foreach ($products as $item)
                                                     <option value="{{ $item->id }}">{{ $item->product_category }}</option>
@@ -370,8 +371,8 @@
 
                                         <div class="col-md-2 mb-4">
                                             <label for="refund_category" class="form-label">Kategori Refund</label><span style="color: red;">*</span>
-                                            <select id="refund_category" class="select2 form-select form-select-lg" data-allow-clear="true" name="refund_category[]" required>
-                                                <option>-- Pilih Kategori --</option>
+                                            <select id="refund_category" class="select2 form-select form-select-lg" data-allow-clear="true" name="refund_category[]">
+                                                <option value="">-- Pilih Kategori --</option>
                                                 <option value="Refund Customer">Refund Customer</option>
                                                 <option value="Refund Supplier">Refund Supplier</option>
                                             </select>
@@ -484,7 +485,7 @@
 
                                         <div class="col-md-2 mb-4">
                                             <label for="category_id_cashback" class="form-label">Kategori Item</label><span style="color: red;">*</span>
-                                            <select id="category_id_cashback" class="select2 form-select form-select-lg" data-allow-clear="true" name="category_id_cashback[]" required>
+                                            <select id="category_id_cashback" class="select2 form-select form-select-lg" data-allow-clear="true" name="category_id_cashback[]">
                                                 <option value="">-- Pilih Kategori --</option>
         
                                                 @foreach ($products as $item)
