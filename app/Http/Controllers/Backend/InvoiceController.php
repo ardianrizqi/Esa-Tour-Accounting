@@ -448,7 +448,7 @@ class InvoiceController extends Controller
 
     public function data()
     {
-        $data = Invoice::with('physical_invoice')->orderBy('created_at', 'desc')->get();
+        $data = Invoice::with('physical_invoice', 'customer')->orderBy('created_at', 'desc')->get();
 
         return response()->json(['data' => $data]);
     }
@@ -717,7 +717,10 @@ class InvoiceController extends Controller
 
 
                     # create tax
-                    $insert = Tax::create([
+                    $insert = Tax::updateOrCreate([
+                        'invoice_id'    => $id,
+                        'name'          => $request->name_tax[$key],
+                    ],[
                         'date'          => $request->date_tax[$key],
                         'invoice_id'    => $id,
                         'name'          => $request->name_tax[$key],
@@ -813,6 +816,19 @@ class InvoiceController extends Controller
                 $value->delete();
             }
 
+            if ($check == null) {
+                $check = DepositHistory::where('invoice_id', $id)
+                    ->where('type', 'vendor_payment')
+                    ->get();
+
+                foreach ($check as $key => $value) {
+                    $deposit = Deposit::find($value->deposit_id);
+    
+                    calculate_deposit_expense($deposit, $value->nominal);
+                    $value->delete();
+                }
+            }
+
             $status_payment = true;
             if ($request->inv_debt_id) {
                 
@@ -821,44 +837,74 @@ class InvoiceController extends Controller
     
                     if ($invoice_d->status_debt !== 'Sudah Lunas' && $request->status == 'Aktif') {
                         if ($request->payment_date[$key] !== null) {
-                            $bank = Bank::find($invoice_d->from_bank);
-        
-                            if ($bank->balance < $invoice_d->debt_to_vendors) {
-                                // dd('masok');
-                                $this->error = true;
-                                $this->messege = 'Tidak Bisa Melakukan Pelunasan Hutang Vendor, Saldo Bank Tidak Mencukupi !!';
-                                // DB::rollBack();
-        
-                                // Alert::error('Error', 'Tidak Bisa Melakukan Pelunasan Hutang Vendor, Saldo Bank Tidak Mencukupi !!');
-                                // return redirect()->back();
+                            if ($invoice_d->from_bank !== null) {
+                                $bank = Bank::find($invoice_d->from_bank);
+
+                                if ($bank->balance < $invoice_d->debt_to_vendors) {
+                                    // dd('masok');
+                                    $this->error = true;
+                                    $this->messege = 'Tidak Bisa Melakukan Pelunasan Hutang Vendor, Saldo Bank Tidak Mencukupi !!';
+                                    // DB::rollBack();
+            
+                                    // Alert::error('Error', 'Tidak Bisa Melakukan Pelunasan Hutang Vendor, Saldo Bank Tidak Mencukupi !!');
+                                    // return redirect()->back();
+                                }
+
+                                calculate_bank_expense($bank, $invoice_d->debt_to_vendors, true);
+
+                                $invoice_d->update([
+                                    'status_debt'       => 'Sudah Lunas',
+                                    'date_payment_debt' => $request->payment_date[$key]
+                                ]);
+            
+                                $transaction_name = 'Pelunasan Hutang Ke Vendor dari '.$invoice->invoice_number;
+            
+                                $create = BankHistory::create([
+                                    'bank_id'           => $invoice_d->from_bank,
+                                    'transaction_name'  => $transaction_name,
+                                    'invoice_id'        => $invoice_d->invoice_id,
+                                    'date'              => $request->payment_date[$key],
+                                    'type'              => 'vendor_payment',
+                                    'nominal'           => $invoice_d->debt_to_vendors,
+                                    'note'              => '-',
+                                    'created_user'      => Auth::user()->id,
+                                    'updated_user'      => Auth::user()->id
+                                ]);
+                            }else{
+                                $deposit = Deposit::find($invoice_d->deposit_id);
+
+                                if ($deposit->balance < $invoice_d->debt_to_vendors) {
+                                    $this->error = true;
+                                    $this->messege = 'Tidak Bisa Melakukan Pelunasan Hutang Vendor, Saldo Deposit Tidak Mencukupi !!';
+                                }
+
+                                calculate_deposit_expense($deposit, $invoice_d->debt_to_vendors, true);
+
+                                $invoice_d->update([
+                                    'status_debt'       => 'Sudah Lunas',
+                                    'date_payment_debt' => $request->payment_date[$key]
+                                ]);
+            
+                                $transaction_name = 'Pelunasan Hutang Ke Vendor dari '.$invoice->invoice_number;
+
+                                $create = DepositHistory::create([
+                                    'deposit_id'        => $deposit->id,
+                                    'transaction_name'  => $transaction_name,
+                                    'invoice_id'        => $invoice_d->invoice_id,
+                                    'date'              =>$request->payment_date[$key],
+                                    // 'product_id'        => $value,
+                                    'type'              => 'vendor_payment',
+                                    'nominal'           => $invoice_d->debt_to_vendors,
+                                    'note'              => '-',
+                                    'created_user'      => Auth::user()->id,
+                                    'updated_user'      => Auth::user()->id
+                                ]);
                             }
-        
-        
-                            calculate_bank_expense($bank, $invoice_d->debt_to_vendors, true);
-        
-                            $invoice_d->update([
-                                'status_debt'       => 'Sudah Lunas',
-                                'date_payment_debt' => $request->payment_date[$key]
-                            ]);
-        
-                            $transaction_name = 'Pelunasan Hutang Ke Vendor dari '.$invoice->invoice_number;
-        
-                            $create = BankHistory::create([
-                                'bank_id'           => $invoice_d->from_bank,
-                                'transaction_name'  => $transaction_name,
-                                'invoice_id'        => $invoice_d->invoice_id,
-                                'date'              => $request->payment_date[$key],
-                                'type'              => 'vendor_payment',
-                                'nominal'           => $invoice_d->debt_to_vendors,
-                                'note'              => '-',
-                                'created_user'      => Auth::user()->id,
-                                'updated_user'      => Auth::user()->id
-                            ]);
                         }
                     }else{
                         $status_payment = true;
                     }
-                
+                // dd('keluar');
     
                     if ($invoice_d->status_debt == 'Belum Lunas') {
                         $status_payment = false;

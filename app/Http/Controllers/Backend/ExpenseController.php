@@ -163,6 +163,10 @@ class ExpenseController extends Controller
 
         try {
             $data = Expense::find($id);
+            $bank = Bank::find($data->bank_id);
+
+            calculate_bank_expense($bank, $data->nominal);
+
             $data->delete();
 
             DB::commit();

@@ -23,6 +23,14 @@ $(function () {
                     },
                     orderable: false,
                 },
+                {
+                    data: null,
+                    "width": "150px",
+                    render: function (data, type, row, meta) {
+                        return data.customer.name;
+                    },
+                    orderable: false,
+                },
                 { data: 'date_publisher' },
                 {
                     data: null,
@@ -81,17 +89,18 @@ $(function () {
                 { responsivePriority: 2, targets: 2 },
                 { responsivePriority: 3, targets: 3 },
                 { responsivePriority: 4, targets: 4 },
+                { responsivePriority: 5, targets: 5 },
                 {
                     // Actions
-                    targets: 8,
+                    targets: 9,
                     title: 'Actions',
                     orderable: false,
                     searchable: false,
                     render: function (data, type, full, meta) {
                       return (
                         '<a href="invoice/show/'+ full.id + '" class="btn btn-sm btn-icon item-edit"><i class="text-primary ti ti-eye"></i></a>'+
-                        '<a href="invoice/edit/'+ full.id + '" class="btn btn-sm btn-icon item-edit"><i class="text-primary ti ti-pencil"></i></a>'+
-                        '<a href="javascript:;" class="btn btn-sm btn-icon item-delete"><i class="text-primary ti ti-trash"></i></a>'
+                        '<a href="invoice/edit/'+ full.id + '" class="btn btn-sm btn-icon item-edit"><i class="text-primary ti ti-pencil"></i></a>'
+                        // '<a href="javascript:;" class="btn btn-sm btn-icon item-delete"><i class="text-primary ti ti-trash"></i></a>'
                       );
                     }
                   }

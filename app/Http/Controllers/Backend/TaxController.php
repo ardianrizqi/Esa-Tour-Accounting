@@ -78,7 +78,7 @@ class TaxController extends Controller
                 calculate_bank_expense($bank, $nominal, true);
 
                 if ($bank_h) {
-                    $trans_name = 'Edit Pajak & Biaya dari '. $invoice->invoice_number .'Nominal Awal Rp. '. number_format($bank_h->nominal, 2) .' Menjadi Rp. '.number_format($nominal, 2);
+                    $trans_name = 'Edit '.$request->name.' dari '. $invoice->invoice_number .'Nominal Awal Rp. '. number_format($bank_h->nominal, 2) .' Menjadi Rp. '.number_format($nominal, 2);
 
                     $bank_h->update([
                         'bank_id'           => $request->bank_id,
@@ -90,7 +90,7 @@ class TaxController extends Controller
                         'updated_user'      => Auth::user()->id
                     ]);
                 }else{
-                    $transaction_name = 'Pajak & Biaya dari '.$invoice->invoice_number. 'Sebesar Rp. '.$nominal;
+                    $transaction_name = $request->name.' dari '.$invoice->invoice_number. 'Sebesar Rp. '.$nominal;
                     
                     $create = BankHistory::create([
                         'bank_id'           => $bank->id,
@@ -114,7 +114,7 @@ class TaxController extends Controller
 
                 calculate_bank_expense($bank, $nominal, true);
 
-                $transaction_name = 'Pajak & Biaya dari '.$invoice->invoice_number. 'Sebesar Rp. '.$nominal;
+                $transaction_name = $request->name.' dari '.$invoice->invoice_number. 'Sebesar Rp. '.$nominal;
                 $create = BankHistory::create([
                     'bank_id'           => $bank->id,
                     'transaction_name'  => $transaction_name,

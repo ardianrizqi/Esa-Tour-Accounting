@@ -22,6 +22,7 @@
                                 <th></th> --}}
                                 <th>ID</th>
                                 <th>Invoice</th>
+                                <th>Nama Pelanggan</th>
                                 <th>Tanggal Penerbitan</th>
                                 <th>Invoice Fisik</th>
                                 {{-- <th>Item</th>

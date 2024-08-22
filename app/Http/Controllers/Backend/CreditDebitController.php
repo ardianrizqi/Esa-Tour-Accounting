@@ -71,13 +71,13 @@ class CreditDebitController extends Controller
                         'credit_debit_id'   => $request->credit_debit_id
                     ])->latest()->first();
                     
-                    calculate_bank_expense($bank, $bank_h->nominal);
+                    calculate_bank_income($bank, $bank_h->nominal, true);
                 }else{
                     $bank_h = BankHistory::where([
                         'credit_debit_id'   => $request->credit_debit_id
                     ])->latest()->first();
                     
-                    calculate_bank_income($bank, $bank_h->nominal, true);
+                    calculate_bank_expense($bank, $bank_h->nominal);
                 }
 
                 $requestData = array_merge($request->all(), [
@@ -90,10 +90,11 @@ class CreditDebitController extends Controller
 
                 if ($request->type == 'Kredit') {
                     $transaction_name = 'Edit Kredit Note : '.$request->name.' Dilakukan Sebesar Rp. '.$nominal;
-                    calculate_bank_expense($bank, $nominal, true);
+                    
+                    calculate_bank_income($bank, $nominal);
                 }else{
                     $transaction_name = 'Debit Note : '.$request->name. ' Dilakukan Sebesar Rp. '.$nominal;
-                    calculate_bank_income($bank, $nominal);
+                    calculate_bank_expense($bank, $nominal, true);
                 }
                 
                 // dd($bank_h);
@@ -126,8 +127,8 @@ class CreditDebitController extends Controller
                         'updated_user'      => Auth::user()->id
                     ]);
 
-
-                    calculate_bank_expense($bank, $nominal, true);
+                    calculate_bank_income($bank, $nominal);
+                  
                 }else{
                     $transaction_name = 'Debit Note : '.$request->name.' Dilakukan Sebesar Rp. '.$nominal;
                  
@@ -143,7 +144,7 @@ class CreditDebitController extends Controller
                         'updated_user'      => Auth::user()->id
                     ]);
 
-                    calculate_bank_income($bank, $nominal);
+                    calculate_bank_expense($bank, $nominal, true);
                 }
             }
 
@@ -167,6 +168,15 @@ class CreditDebitController extends Controller
 
         try {
             $data = CreditDebit::find($id);
+            $bank = Bank::find($data->bank_id);
+
+            if ($data->type == 'Kredit') {
+                calculate_bank_income($bank, $data->nominal, true);
+            }else{
+                calculate_bank_expense($bank, $data->nominal);
+            }
+
+
             $data->delete();
 
             DB::commit();

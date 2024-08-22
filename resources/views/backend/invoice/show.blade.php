@@ -150,7 +150,7 @@
                                                 <label for="select2Basic" class="form-label">Nominal</label>
                                                 <div class="input-group">
                                                     <span class="input-group-text" id="basic-addon11">Rp.</span>
-                                                    <input id="nominal" type="text" class="form-control nominal" placeholder="" aria-label="" aria-describedby="basic-addon11"  name="nominal[]" oninput="update_piutang(this)" value="{{ $item->nominal }}"/>
+                                                    <input id="nominal" type="text" class="form-control nominal" placeholder="" aria-label="" aria-describedby="basic-addon11"  name="nominal[]" oninput="update_piutang(this)" value="{{ number_format($item->nominal, 0) }}"/>
                                                 </div>
                                             </div>
         
@@ -294,7 +294,7 @@
                                                 <label for="select2Basic" class="form-label">Nominal</label>
                                                 <div class="input-group">
                                                     <span class="input-group-text" id="basic-addon11">Rp.</span>
-                                                    <input id="nominal_refund" type="text" class="form-control nominal_refund" placeholder="" aria-label="" aria-describedby="basic-addon11"  name="nominal_refund[]" value="{{ $item->nominal }}" oninput="format_refund(this)"/>
+                                                    <input id="nominal_refund" type="text" class="form-control nominal_refund" placeholder="" aria-label="" aria-describedby="basic-addon11"  name="nominal_refund[]" value="{{ number_format($item->nominal, 0) }}" oninput="format_refund(this)"/>
                                                 </div>
                                             </div>
 
@@ -421,7 +421,7 @@
                                                 <label for="select2Basic" class="form-label">Nominal</label>
                                                 <div class="input-group">
                                                     <span class="input-group-text" id="basic-addon11">Rp.</span>
-                                                    <input id="nominal_cashback" type="text" class="form-control nominal_cashback" placeholder="" aria-label="" aria-describedby="basic-addon11"  name="nominal_cashback[]" value="{{ $item->nominal }}" oninput="format_cashback(this)"/>
+                                                    <input id="nominal_cashback" type="text" class="form-control nominal_cashback" placeholder="" aria-label="" aria-describedby="basic-addon11"  name="nominal_cashback[]" value="{{ number_format($item->nominal, 0) }}" oninput="format_cashback(this)"/>
                                                 </div>
                                             </div>
 
@@ -547,7 +547,7 @@
                                                 <label for="select2Basic" class="form-label">Nominal</label>
                                                 <div class="input-group">
                                                     <span class="input-group-text" id="basic-addon11">Rp.</span>
-                                                    <input id="nominal_tax" type="text" class="form-control nominal_tax" placeholder="" aria-label="" aria-describedby="basic-addon11"  name="nominal_tax[]" value="{{ $item->nominal }}" oninput="format_tax(this)"/>
+                                                    <input id="nominal_tax" type="text" class="form-control nominal_tax" placeholder="" aria-label="" aria-describedby="basic-addon11"  name="nominal_tax[]" value="{{ number_format($item->nominal, 0) }}" oninput="format_tax(this)"/>
                                                 </div>
                                             </div>
 
@@ -655,14 +655,14 @@
 
             $('.piutang-row').each(function() {
                 var nominal = $(this).find('.nominal').val().replace(/[^0-9]/g, '') || 0;
-                // console.log(nominal);
                 // console.log('==========');
                 // console.log(Number(receivables_price) - Number(nominal));
 
                 // total_receivables = Number(receivables_price) - Number(nominal);
                 total_nominal += Number(nominal);
 
-                var formattedValue = formatCurrency($(this).find('.nominal').val());
+                var formattedValue = formatCurrency($(this).find('.nominal').val().replace(/[^0-9]/g, ''));
+                // console.log(formattedValue);
                 $(this).find('.nominal').val(formattedValue);
             });
 
@@ -884,7 +884,7 @@
             var row = $(inputElement).closest('.refund-row');
             var nominal = row.find('.nominal_refund');
 
-            var formattedValue = formatCurrency(nominal.val());
+            var formattedValue = formatCurrency(nominal.val().replace(/[^0-9]/g, ''));
             nominal.val(formattedValue);
         }
 
@@ -893,7 +893,7 @@
             var row = $(inputElement).closest('.cashback-row');
             var nominal = row.find('.nominal_cashback');
 
-            var formattedValue = formatCurrency(nominal.val());
+            var formattedValue = formatCurrency(nominal.val().replace(/[^0-9]/g, ''));
             nominal.val(formattedValue);
         }
 
@@ -902,7 +902,7 @@
             var row = $(inputElement).closest('.tax-row');
             var nominal = row.find('.nominal_tax');
 
-            var formattedValue = formatCurrency(nominal.val());
+            var formattedValue = formatCurrency(nominal.val().replace(/[^0-9]/g, ''));
             nominal.val(formattedValue);
         }
     </script>

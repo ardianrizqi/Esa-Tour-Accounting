@@ -264,9 +264,9 @@ class BankController extends Controller
                 $transaction_name = '';
 
                 if ($source_from == 'bank') {
-                   $transaction_name = 'Saldo Masuk dari Bank '. $from_bank->bank_name. 'ke Deposit '.$to_bank->name;
+                   $transaction_name = 'Saldo Masuk dari Bank '. $from_bank->bank_name. ' ke Deposit '.$to_bank->name;
                 }else{
-                    $transaction_name = 'Saldo Masuk dari Deposit '.$from_bank->name.'ke Deposit '.$to_bank->name;
+                    $transaction_name = 'Saldo Masuk dari Deposit '.$from_bank->name.' ke Deposit '.$to_bank->name;
                 }
 
                 calculate_deposit_income($to_bank, $nominal);
@@ -275,7 +275,7 @@ class BankController extends Controller
                     'deposit_id'        => $to_bank->id,
                     'transaction_name'  => $transaction_name,
                     'date'              => Carbon::now(),
-                    'type'              => 'transfer_expense',
+                    'type'              => 'transfer_income',
                     'nominal'           => $nominal,
                     'created_user'      => Auth::user()->id,
                     'updated_user'      => Auth::user()->id

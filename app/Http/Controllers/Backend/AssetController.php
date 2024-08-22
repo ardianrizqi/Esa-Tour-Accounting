@@ -131,6 +131,10 @@ class AssetController extends Controller
 
         try {
             $data = Asset::find($id);
+            $bank = Bank::find($data->bank_id);
+
+            calculate_bank_income($bank, $data->nominal, true);
+
             $data->delete();
 
             DB::commit();

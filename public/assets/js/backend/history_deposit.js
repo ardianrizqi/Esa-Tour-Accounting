@@ -24,10 +24,12 @@ $(function () {
                 {
                     data: null,
                     render: function (data, type, row) {
-                       if (data['type'] == 'deposit') {
+                       if (data['type'] == 'deposit' || data['type'] == 'transfer_income') {
                             return 'Pemasukan';
-                       }else if(data['type'] == 'expense'){
+                       }else if(data['type'] == 'expense' || data['type'] == 'transfer_expense'){
                             return  'Pengeluaran';
+                       }else if(data['type'] == 'vendor_payment'){
+                            return 'Pengeluaran';
                        }else{
                             return '-';
                        }
