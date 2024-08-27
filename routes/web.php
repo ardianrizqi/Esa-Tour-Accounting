@@ -122,6 +122,10 @@ Route::middleware('auth')->group(function () {
             Route::get('/', 'ScaleController@index')->name('scale.index');
         });
 
+        Route::group(['prefix' => 'sale'], function () {
+            Route::get('/', 'SaleController@index')->name('sale.index');
+        });
+
         Route::group(['prefix' => 'category-note'], function () {
             Route::get('/', 'CategoryNoteController@index')->name('category_note.index');
             Route::get('/data', 'CategoryNoteController@data')->name('category_note.data');

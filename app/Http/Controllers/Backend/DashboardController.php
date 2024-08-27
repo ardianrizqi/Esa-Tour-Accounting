@@ -21,7 +21,7 @@ class DashboardController extends Controller
     {
         $title = $this->title;
         $currentMonth = Carbon::now()->month;
-        $invoice = Invoice::orderBy('created_at', 'desc')->take(5)->get();
+        $invoice = Invoice::where('status', 'Aktif')->orderBy('created_at', 'desc')->take(5)->get();
         $today_income = BankHistory::whereDate('date', Carbon::now())
                 ->whereIn('type', ['customer_payment', 'cashback'])    
                 ->sum('nominal');

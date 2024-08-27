@@ -48,7 +48,7 @@ function calculate_bank_expense($data, $nominal, $is_increase = false)
     }else{
         $data->update([
             'expense'   => $data->expense - $nominal,
-            'balance'   => ($data->beginning_balance + $data->income) + ($data->expense - $nominal)
+            'balance'   => ($data->beginning_balance + $data->income) - ($data->expense - $nominal)
         ]);
     }
 
