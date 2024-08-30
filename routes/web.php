@@ -126,6 +126,10 @@ Route::middleware('auth')->group(function () {
             Route::get('/', 'SaleController@index')->name('sale.index');
         });
 
+        Route::group(['prefix' => 'profit-loss'], function () {
+            Route::get('/', 'ProfitLossController@index')->name('profit_loss.index');
+        });
+
         Route::group(['prefix' => 'category-note'], function () {
             Route::get('/', 'CategoryNoteController@index')->name('category_note.index');
             Route::get('/data', 'CategoryNoteController@data')->name('category_note.data');
