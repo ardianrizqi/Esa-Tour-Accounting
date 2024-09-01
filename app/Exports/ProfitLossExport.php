@@ -1,37 +1,38 @@
 <?php
 
-namespace App\Http\Controllers\Backend;
+namespace App\Exports;
 
-use App\Http\Controllers\Controller;
 use App\Models\Expense;
 use App\Models\Invoice;
-use Illuminate\Http\Request;
+use Maatwebsite\Excel\Concerns\FromCollection;
+use Illuminate\Contracts\View\View;
+use Maatwebsite\Excel\Concerns\FromView;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
-use Maatwebsite\Excel\Facades\Excel;
-use App\Exports\ProfitLossExport;
+use Maatwebsite\Excel\Concerns\WithStyles;
+use Maatwebsite\Excel\Concerns\WithHeadings;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class ProfitLossController extends Controller
+class ProfitLossExport implements FromView, WithStyles, WithHeadings
 {
-    public $title;
+    protected $periode, $start_date, $end_date;
 
-    public function __construct()
+    // Constructor to accept parameters
+    public function __construct($periode, $start_date, $end_date)
     {
-        $this->title = 'Laba Rugi';
+        // dd($periode);
+        $this->periode = $periode;
+        $this->start_date = $start_date;
+        $this->end_date = $end_date;
     }
-
-    public function index(Request $request)
+    
+    public function view(): View
     {
-        // dd($request);
-        $periode = $request->periode;
-        $start_date = $request->start_date;
-        $end_date = $request->end_date;
-        $title      = $this->title;
         $invoice   = Invoice::select(DB::raw('SUM(invoice_d.selling_price * invoice_d.qty) as selling_price'), 'products.product_category', DB::raw('SUM(invoice_d.purchase_price * invoice_d.qty) as purchase_price'))
                 ->join('invoice_d', 'invoice.id', 'invoice_d.invoice_id')
                 ->join('products', 'invoice_d.category_id', 'products.id')
                 ->where('invoice.status', 'Aktif')
-                ->when($request->periode, function ($query, $periode) {
+                ->when($this->periode, function ($query, $periode) {
                     if ($periode == 'last_1_month') {
                         $oneMonthAgo = Carbon::now()->subMonth()->startOfDay();
                         $today = Carbon::now()->endOfDay();
@@ -46,15 +47,15 @@ class ProfitLossController extends Controller
                     }
                   
                     
-                })->when($request->start_date, function ($query, $date) {
+                })->when($this->start_date, function ($query, $date) {
                     $query->where('invoice.date_publisher', '>=', $date);
                     
-                })->when($request->end_date, function ($query, $date) {
+                })->when($this->end_date, function ($query, $date) {
                     $query->where('invoice.date_publisher', '<=', $date);
                 });
 
 
-        if ($request->start_date == null && $request->periode == null && $request->end_date == null) {
+        if ($this->start_date == null && $this->periode == null && $this->end_date == null) {
             $invoice->where('invoice.date_publisher', Carbon::now());
         };
 
@@ -64,7 +65,7 @@ class ProfitLossController extends Controller
                     ->join('bank_history', 'invoice.id', 'bank_history.invoice_id')
                     ->where('invoice.status', 'Aktif')
                     ->where('bank_history.refund_category', 'Refund Customer')
-                    ->when($request->periode, function ($query, $periode) {
+                    ->when($this->periode, function ($query, $periode) {
                         if ($periode == 'last_1_month') {
                             $oneMonthAgo = Carbon::now()->subMonth()->startOfDay();
                             $today = Carbon::now()->endOfDay();
@@ -78,15 +79,15 @@ class ProfitLossController extends Controller
                             $query->whereBetween('invoice.date_publisher', [$oneYearAgo, $today]);
                         }
                     })
-                    ->when($request->start_date, function ($query, $date) {
+                    ->when($this->start_date, function ($query, $date) {
                         $query->where('invoice.date_publisher', '>=', $date);
                         
-                    })->when($request->end_date, function ($query, $date) {
+                    })->when($this->end_date, function ($query, $date) {
                         $query->where('invoice.date_publisher', '<=', $date);
                     });
                     // ->first();
 
-        if ($request->start_date == null && $request->periode == null && $request->end_date == null) {
+        if ($this->start_date == null && $this->periode == null && $this->end_date == null) {
             $retur_sale->where('invoice.date_publisher', Carbon::now());
         };
 
@@ -96,7 +97,7 @@ class ProfitLossController extends Controller
             ->join('bank_history', 'invoice.id', 'bank_history.invoice_id')
             ->where('invoice.status', 'Aktif')
             ->where('bank_history.refund_category', 'Refund Supplier')
-            ->when($request->periode, function ($query, $periode) {
+            ->when($this->periode, function ($query, $periode) {
                 if ($periode == 'last_1_month') {
                     $oneMonthAgo = Carbon::now()->subMonth()->startOfDay();
                     $today = Carbon::now()->endOfDay();
@@ -110,15 +111,15 @@ class ProfitLossController extends Controller
                     $query->whereBetween('invoice.date_publisher', [$oneYearAgo, $today]);
                 }
             })
-            ->when($request->start_date, function ($query, $date) {
+            ->when($this->start_date, function ($query, $date) {
                 $query->where('invoice.date_publisher', '>=', $date);
                 
-            })->when($request->end_date, function ($query, $date) {
+            })->when($this->end_date, function ($query, $date) {
                 $query->where('invoice.date_publisher', '<=', $date);
             });
             // ->first();
 
-        if ($request->start_date == null && $request->periode == null && $request->end_date == null) {
+        if ($this->start_date == null && $this->periode == null && $this->end_date == null) {
             $retur_purchase->where('invoice.date_publisher', Carbon::now());
         };
 
@@ -127,7 +128,7 @@ class ProfitLossController extends Controller
         $ppn = Invoice::select(DB::raw('SUM(bank_history.nominal) as ppn'))
             ->join('bank_history', 'invoice.id', 'bank_history.invoice_id')
             ->where('bank_history.type', 'tax')
-            ->when($request->periode, function ($query, $periode) {
+            ->when($this->periode, function ($query, $periode) {
                 if ($periode == 'last_1_month') {
                     $oneMonthAgo = Carbon::now()->subMonth()->startOfDay();
                     $today = Carbon::now()->endOfDay();
@@ -141,26 +142,26 @@ class ProfitLossController extends Controller
                     $query->whereBetween('invoice.date_publisher', [$oneYearAgo, $today]);
                 }
             })
-            ->when($request->start_date, function ($query, $date) {
+            ->when($this->start_date, function ($query, $date) {
                 $query->where('invoice.date_publisher', '>=', $date);
                 
-            })->when($request->end_date, function ($query, $date) {
+            })->when($this->end_date, function ($query, $date) {
                 $query->where('invoice.date_publisher', '<=', $date);
             });
             // ->first();
      
-        if ($request->start_date == null && $request->periode == null && $request->end_date == null) {
+        if ($this->start_date == null && $this->periode == null && $this->end_date == null) {
             $ppn->where('invoice.date_publisher', Carbon::now());
         };
 
         $ppn = $ppn->first();
 
         
-        $expense = Expense::when($request->start_date, function ($query, $date) {
+        $expense = Expense::when($this->start_date, function ($query, $date) {
             $query->where('date', '>=', $date);
             
         })
-        ->when($request->periode, function ($query, $periode) {
+        ->when($this->periode, function ($query, $periode) {
             if ($periode == 'last_1_month') {
                 $oneMonthAgo = Carbon::now()->subMonth()->startOfDay();
                 $today = Carbon::now()->endOfDay();
@@ -174,25 +175,62 @@ class ProfitLossController extends Controller
                 $query->whereBetween('date', [$oneYearAgo, $today]);
             }
         })
-        ->when($request->end_date, function ($query, $date) {
+        ->when($this->end_date, function ($query, $date) {
             $query->where('date', '<=', $date);
         });
 
-        if ($request->start_date == null && $request->periode == null && $request->end_date == null) {
+        if ($this->start_date == null && $this->periode == null && $this->end_date == null) {
             $expense->where('date', Carbon::now());
         };
 
         $expense = $expense->get();
 
-        return view('backend.profit_loss.index', compact('title', 'invoice', 'ppn', 'retur_sale', 'retur_purchase', 'expense', 'start_date', 'end_date', 'periode'));
+        // Pass the data to the Blade view
+        return view('backend.profit_loss.export', [
+           'invoice'        => $invoice, 
+           'ppn'            => $ppn, 
+           'retur_sale'     => $retur_sale, 
+           'retur_purchase' => $retur_purchase, 
+           'expense'        => $expense, 
+           'start_date'     => $this->start_date, 
+           'end_date'       => $this->end_date, 
+           'periode'        => $this->periode
+        ]);
     }
 
-    public function export(Request $request)
+    public function headings(): array
     {
-        $periode = $request->periode;
-        $start_date = $request->start_date;
-        $end_date = $request->end_date;
+        return [
+            ['Header 1', 'Header 2', 'Header 3'],
+        ];
+    }
 
-        return Excel::download(new ProfitLossExport($periode, $start_date, $end_date), 'laba_rugi.xlsx');
+    public function styles(Worksheet $sheet)
+    {
+        $headerStyle = [
+            'font' => [
+                'bold' => true,
+                'color' => ['argb' => '260301'],
+            ],
+            'alignment' => [
+                'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+            ],
+            'borders' => [
+                'allBorders' => [
+                    'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                    'color' => ['argb' => '260301'],
+                ],
+            ],
+            'fill' => [
+                'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                'color' => ['argb' => 'FFFFC000'],
+            ],
+        ];
+
+        // $sheet->getStyle('A1:B1')->applyFromArray($headerStyle);
+
+        return [
+            // Set styles for columns or rows here
+        ];
     }
 }

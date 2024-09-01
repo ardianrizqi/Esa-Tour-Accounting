@@ -4,6 +4,41 @@
 <div class="content-wrapper">
     <div class="container-xxl flex-grow-1 container-p-y">
         <h4 class="py-3 mb-4"><span class="text-muted fw-light"></span>{{ $title }}</h4>
+        <div class="col-md-3 mb-4">
+            <div>
+                <a href="{{ route('backend.sale.export', ['start_date' => $start_date, 'end_date' => $end_date]) }}" target="__blank" style="margin-top: 10%;" class="btn btn-info">
+                    <svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-file-spreadsheet"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M14 3v4a1 1 0 0 0 1 1h4" /><path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z" /><path d="M8 11h8v7h-8z" /><path d="M8 15h8" /><path d="M11 11v7" /></svg>
+                    Export Excel
+                </a>
+            </div>
+        </div>
+        <div class="row">
+            <form action="{{ route('backend.sale.search') }}" method="POST" class="row g-3">
+                @csrf
+                <div class="col-md-3 mb-4">
+                    <label for="select2Basic" class="form-label">Tanggal Awal</label><span style="color: red;">*</span>
+                    <input id="date" type="date" name="start_date" class="form-control" id="floatingInput"
+                        aria-describedby="floatingInputHelp"/>
+                </div>
+
+                <div class="col-md-3 mb-4">
+                    <label for="select2Basic" class="form-label">Tanggal Akhir</label><span style="color: red;">*</span>
+                    <input id="date" type="date" name="end_date" class="form-control" id="floatingInput"
+                        aria-describedby="floatingInputHelp"/>
+                </div>
+
+                <div class="col-md-3 mb-4">
+                    <button type="submit" style="margin-top: 12%;" class="btn btn-warning">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                            class="icon icon-tabler icons-tabler-outline icon-tabler-refresh">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                            <path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4" />
+                            <path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4" /></svg>
+                    </button>
+                </div>
+            </form>
+        </div>
 
         <!-- DataTable with Buttons -->
         <div class="card">
@@ -17,45 +52,37 @@
                         </tr>
 
                         @foreach ($invoice as $item)
-                            @php 
-                                $invoice_d = App\Models\InvoiceDetail::select('invoice.date_publisher', Illuminate\Support\Facades\DB::raw('SUM(invoice_d.selling_price) as price'), 'products.product_category')
+                            {{-- @php 
+                                $invoice_d = App\Models\InvoiceDetail::select(
+                                            Illuminate\Support\Facades\DB::raw('SUM(invoice_d.selling_price) as price'), 'products.product_category')
                                             ->join('invoice', 'invoice_d.invoice_id', 'invoice.id')
                                             ->join('products', 'invoice_d.category_id', 'products.id')
                                             ->where('invoice.date_publisher', $item->date_publisher)
-                                            ->groupBy('invoice.date_publisher', 'products.product_category')
+                                            ->groupBy('products.product_category')
                                             ->get();
-                                // dd($invoice_d);
-                            @endphp
+                            @endphp --}}
 
                             <tr>
                                 <td>
-                                    {{ $item->date_publisher }}
+                                    {{ $item['date_publisher'] }}
                                 </td>
                                 <td>
-                                    @if (isset($invoice_d[0]))
-                                        {{ $invoice_d[0]->product_category }} 
-                                    @else 
-                                        -
-                                    @endif
+                                    {{ $item['categories'][0]['product_category'] }}
                                 </td>
                                 <td>
-                                    @if (isset($invoice_d[0]))
-                                        {{number_format($invoice_d[0]->price, 2)  }} 
-                                    @else 
-                                        -
-                                    @endif
+                                    {{number_format($item['categories'][0]['price'], 2)  }} 
                                 </td>
                             </tr>
 
-                            @if (isset($invoice_d))
-                                @for ($i = 1; $i < count($invoice_d); $i++)
+                            @if(count($item['categories']) > 1)
+                                @for ($i = 1; $i < count($item['categories']); $i++)
                                     <tr>
                                         <td></td>
-                                        <td>{{ $invoice_d[$i]->product_category }}</td>
-                                        <td>{{ number_format($invoice_d[$i]->price, 2) }}</td>
+                                        <td>{{  $item['categories'][$i]['product_category'] }}</td>
+                                        <td>{{ number_format($item['categories'][$i]['price'], 2) }}</td>
                                     </tr>
                                 @endfor
-                            @endif
+                            @endif       
                         @endforeach
                     </thead>
                 </table>

@@ -120,14 +120,19 @@ Route::middleware('auth')->group(function () {
 
         Route::group(['prefix' => 'scale'], function () {
             Route::get('/', 'ScaleController@index')->name('scale.index');
+            Route::post('/', 'ScaleController@index')->name('scale.search');
         });
 
         Route::group(['prefix' => 'sale'], function () {
             Route::get('/', 'SaleController@index')->name('sale.index');
+            Route::post('/', 'SaleController@index')->name('sale.search');
+            Route::get('/export', 'SaleController@export')->name('sale.export');
         });
 
         Route::group(['prefix' => 'profit-loss'], function () {
             Route::get('/', 'ProfitLossController@index')->name('profit_loss.index');
+            Route::post('/', 'ProfitLossController@index')->name('profit_loss.search');
+            Route::get('/export', 'ProfitLossController@export')->name('profit_loss.export');
         });
 
         Route::group(['prefix' => 'category-note'], function () {

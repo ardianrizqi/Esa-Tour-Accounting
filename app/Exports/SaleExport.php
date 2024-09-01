@@ -1,44 +1,38 @@
 <?php
 
-namespace App\Http\Controllers\Backend;
+namespace App\Exports;
 
-use App\Exports\SaleExport;
-use App\Http\Controllers\Controller;
 use App\Models\Invoice;
-use Illuminate\Http\Request;
+use Maatwebsite\Excel\Concerns\FromCollection;
+use Illuminate\Contracts\View\View;
+use Maatwebsite\Excel\Concerns\FromView;
 use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
-use Maatwebsite\Excel\Facades\Excel;
 
-class SaleController extends Controller
+class SaleExport implements FromView
 {
-    public $title;
+    protected $start_date, $end_date;
 
-    public function __construct()
+ 
+    public function __construct($start_date, $end_date)
     {
-        $this->title = 'Penjualan';
+        $this->start_date = $start_date;
+        $this->end_date = $end_date;
     }
 
-    public function index(Request $request)
+
+    public function view(): View
     {
-        // dd($request);
-        $start_date = $request->start_date;
-        $end_date = $request->end_date;
-        $title      = $this->title;
         $invoice = Invoice::select('invoice.date_publisher', DB::raw('SUM(invoice_d.selling_price * qty) as price'), 'products.product_category')
                 ->join('invoice_d', 'invoice.id', 'invoice_d.invoice_id')
                 ->join('products', 'invoice_d.category_id', 'products.id')
                 ->where('status', 'Aktif')
-                ->when($request->start_date, function ($query, $date) {
+                ->when($this->start_date, function ($query, $date) {
                     $query->where('invoice.date_publisher', '>=', $date);
                     
-                })->when($request->end_date, function ($query, $date) {
+                })->when($this->end_date, function ($query, $date) {
                     $query->where('invoice.date_publisher', '<=', $date);
                 });
 
-        // if ($request->start_date == null && $request->periode == null && $request->end_date == null) {
-        //     $invoice->where('invoice.date_publisher', Carbon::now());
-        // };
 
         $invoice = $invoice->groupBy('invoice.date_publisher', 'products.product_category')->orderBy('invoice.created_at', 'desc')->get();
 
@@ -46,34 +40,28 @@ class SaleController extends Controller
 
         foreach ($invoice as $invoice) {
             $date = $invoice->date_publisher;
-        
+
             if (!isset($groupedInvoices[$date])) {
                 $groupedInvoices[$date] = [
                     'date_publisher' => $date,
                     'categories' => []
                 ];
             }
-        
+
             // Add the product category and its price to the categories array
             $groupedInvoices[$date]['categories'][] = [
                 'product_category' => $invoice->product_category,
                 'price' => $invoice->price
             ];
         }
-        
+
         // Convert to a simple array if needed
         $groupedInvoices = array_values($groupedInvoices);
         $invoice = $groupedInvoices;
-        // dd($invoice);
 
-        return view('backend.sale.index', compact('title', 'invoice', 'start_date', 'end_date'));
-    }
+        return view('backend.sale.export', [
+            'invoice'        => $invoice, 
+        ]);
 
-    public function export(Request $request)
-    {
-        $start_date = $request->start_date;
-        $end_date = $request->end_date;
-
-        return Excel::download(new SaleExport($start_date, $end_date), 'penjualan.xlsx');
     }
 }
