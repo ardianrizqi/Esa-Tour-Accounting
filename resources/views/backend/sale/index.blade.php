@@ -52,15 +52,9 @@
                         </tr>
 
                         @foreach ($invoice as $item)
-                            {{-- @php 
-                                $invoice_d = App\Models\InvoiceDetail::select(
-                                            Illuminate\Support\Facades\DB::raw('SUM(invoice_d.selling_price) as price'), 'products.product_category')
-                                            ->join('invoice', 'invoice_d.invoice_id', 'invoice.id')
-                                            ->join('products', 'invoice_d.category_id', 'products.id')
-                                            ->where('invoice.date_publisher', $item->date_publisher)
-                                            ->groupBy('products.product_category')
-                                            ->get();
-                            @endphp --}}
+                            @php 
+                                $total = 0;
+                            @endphp
 
                             <tr>
                                 <td>
@@ -74,6 +68,8 @@
                                 </td>
                             </tr>
 
+                            @php $total += $item['categories'][0]['price']; @endphp
+
                             @if(count($item['categories']) > 1)
                                 @for ($i = 1; $i < count($item['categories']); $i++)
                                     <tr>
@@ -81,8 +77,22 @@
                                         <td>{{  $item['categories'][$i]['product_category'] }}</td>
                                         <td>{{ number_format($item['categories'][$i]['price'], 2) }}</td>
                                     </tr>
+
+                                    @php $total += $item['categories'][$i]['price']; @endphp
                                 @endfor
-                            @endif       
+                            @endif     
+                            
+                            <tr>
+                                <td>
+                                    
+                                </td>
+                                <td>
+                                    <b>Total</b>
+                                </td>
+                                <td>
+                                    <b>{{number_format($total, 2)  }} </b> 
+                                </td>
+                            </tr>
                         @endforeach
                     </thead>
                 </table>

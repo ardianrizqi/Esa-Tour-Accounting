@@ -306,12 +306,18 @@ class InvoiceController extends Controller
 
             
             foreach ($request->category_id as $key => $value) {
+                // dd($request);
                 $fromBank = $request->from_bank[$key];
                 [$source, $id] = explode('-', $fromBank);
         
                 $transaction_name = 'Invoice dari '.$insert_h->invoice_number. ' Ket: '.$request->note[$key];
+                
                 $selling_price = format_nominal($request->selling_price[$key]);
                 $purchase_price = format_nominal($request->purchase_price[$key]);
+
+                $total_selling = $selling_price * $request->qty[$key];
+                $total_purchase = $purchase_price * $request->qty[$key];
+                // dd($total_purchase);
 
                 if ($request->debt_to_vendors[$key]) {
                     $debt_to_vendors = format_nominal($request->debt_to_vendors[$key]);
@@ -322,7 +328,7 @@ class InvoiceController extends Controller
                 if ($source == 'bank') {
                     $bank = Bank::find($id);
 
-                    if ($request->purchase_price[$key] > $bank->balance && $request->status == 'Aktif') {
+                    if ($total_purchase > $bank->balance && $request->status == 'Aktif') {
                         DB::rollBack();
                         Alert::error('Error', 'Saldo Bank Tidak Cukup. Balance : '.$bank->balance);
                         return redirect()->back();
@@ -347,7 +353,7 @@ class InvoiceController extends Controller
                     // dd($param_d);
 
                     if ($request->status == 'Aktif') {
-                        calculate_bank_expense($bank, $purchase_price, true);
+                        calculate_bank_expense($bank, $total_purchase, true);
     
                         $create = BankHistory::create([
                             'bank_id'           => $bank->id,
@@ -356,7 +362,7 @@ class InvoiceController extends Controller
                             'date'              => $request->date_publisher,
                             'product_id'        => $value,
                             'type'              => 'expense',
-                            'nominal'           => $purchase_price,
+                            'nominal'           => $total_purchase,
                             'note'              => $request->note[$key],
                             'created_user'      => Auth::user()->id,
                             'updated_user'      => Auth::user()->id
@@ -366,7 +372,7 @@ class InvoiceController extends Controller
                 } elseif ($source == 'deposit') {
                     $deposit = Deposit::find($id);
 
-                    if ($request->purchase_price[$key] > $deposit->balance && $request->status == 'Aktif') {
+                    if ($total_purchase > $deposit->balance && $request->status == 'Aktif') {
                         DB::rollBack();
                         Alert::error('Error', 'Saldo Deposit Tidak Cukup. Balance : '.$deposit->balance);
                         return redirect()->back();
@@ -390,7 +396,7 @@ class InvoiceController extends Controller
                     ];
 
                     if ($request->status == 'Aktif') {
-                        calculate_deposit_expense($deposit, $purchase_price, true);
+                        calculate_deposit_expense($deposit, $total_purchase, true);
 
                         $create = DepositHistory::create([
                             'deposit_id'        => $deposit->id,
@@ -399,7 +405,7 @@ class InvoiceController extends Controller
                             'date'              => $request->date_publisher,
                             'product_id'        => $value,
                             'type'              => 'expense',
-                            'nominal'           => $purchase_price,
+                            'nominal'           => $total_purchase,
                             'note'              => $request->note[$key],
                             'created_user'      => Auth::user()->id,
                             'updated_user'      => Auth::user()->id
@@ -426,8 +432,8 @@ class InvoiceController extends Controller
                 $product = Product::find($value);
 
                 if ($request->status == 'Aktif') {
-                    calculate_sell_product($product, $selling_price);
-                    calculate_purchase_product($product, $purchase_price);
+                    calculate_sell_product($product, $total_selling);
+                    calculate_purchase_product($product, $total_purchase);
                     calculate_profit_product($product);
                 }
             }
