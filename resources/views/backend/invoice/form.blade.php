@@ -57,7 +57,7 @@
 
                                     <div class="col-md-3 mb-4">
                                         <label for="status" class="form-label">Status Invoice</label><span style="color: red;">*</span>
-                                        <select id="status" class="select2 form-select form-select-lg" data-allow-clear="true" name="status" required>
+                                        <select id="status" class="select2 form-select form-select-lg" data-allow-clear="true" name="status" required @isset($data) @if($data->status == 'Void') disabled  @endif @endisset>
                                             <option>-- Pilih Status --</option>
                                             <option @isset($data) @if($data->status == 'Aktif') selected  @endif @endisset value="Aktif">Aktif</option>
                                             <option @isset($data) @if($data->status == 'Void') selected  @endif @endisset value="Void">Void</option>
